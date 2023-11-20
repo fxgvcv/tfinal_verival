@@ -1,92 +1,148 @@
 # informativo-para-imigrantes-backend
 
+# Documentação
+ Acesse Swagger em  localhost:8080/swagger-ui/index.html
+
+# Estrutura do Projeto 
+
+A estrutura é organizada da seguinte forma:
+
+- :file_folder: `src/main/java/com/ages/informativoparaimigrantes`
+  - :file_folder: `config/`              - Configurações personalizadas do app
+  - :file_folder: `controller/`              - Requisições HTTP e respostas
+  - :file_folder: `domain/`          - Classes para objetos centrais do negócio
+  - :file_folder: `dto/`            - Estrutura dos dados que são trocados entre o front-end e o back-end
+  - :file_folder: `repository/`                - Acesso e interação com o banco de dados
+  - :file_folder: `security/`               - Configurações de autenticação e autorização
+  - :file_folder: `services/`              - Implementa a lógica de negócios
+  - :file_folder: `util/`             - Funções utilitárias
+
+# Pré-requisitos
+* [Java SDK](https://www.techspot.com/downloads/5553-java-jdk.html) (v 11.0.14)
+Para verificar instalação: 
+```
+java -version
+```
+
+* [Gradle](https://gradle.org/releases/) 
+Para verificar instalação: 
+```
+gradle -v
+```
+
+* [IntelliJ](https://www.jetbrains.com/pt-br/idea/download/) 
+
+## Instalar dependências do projeto
+ [Sugerida a utilização de package manager]
+* [Gradle](https://gradle.org/install/)
 
 
-## Getting started
+# Executar
+## Clonar repositório em sua pasta
+```bash 
+$ cd PLUGIN_FOLDER
+$ git clone https://tools.ages.pucrs.br/informativo-para-imigrantes/informativo-para-imigrantes-backend.git
+$ cd informativo-para-imigrantes-backend
+```
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Executar o projeto no ambiente de desenvolvimento
+```bash
+$ gradle bootRun -Dspring.profiles.active=dev
+```
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+# Git Workflow
+O Gitflow é um modelo alternativo de ramificação do Git que consiste no uso de ramificações de recursos (features) e várias ramificações primárias (master e develop).
 
-## Add your files
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+ ## Branches
+Cada branch relacionada à features será criada a partir da branch develop. Nos tópicos abaixo será explicado as nomenclatura que serão utilizadas para o desenvolvimento.
+
+### Nomes
+
+O nome da branch será em inglês e deve seguir o padrão **feature/<user-story>-<nome-da-feature>**. Quando for necessário fazer alguma correção, o prefixo utilizado deverá ser **fix/<user-story>-<nome-da-feature>**.
+
+ ### Requisitos
+
+Para garantir que o processo de desenvolvimento esteja sempre atualizado, lembre-se de executar o seguinte comando na branch dev antes de criar uma branch nova:
 
 ```
-cd existing_repo
-git remote add origin https://tools.ages.pucrs.br/informativo-para-imigrantes/informativo-para-imigrantes-backend.git
-git branch -M main
-git push -uf origin main
+git pull origin dev
 ```
 
-## Integrate with your tools
+ ### Criando branchs
 
-- [ ] [Set up project integrations](https://tools.ages.pucrs.br/informativo-para-imigrantes/informativo-para-imigrantes-backend/-/settings/integrations)
+Para criar uma nova branch, execute o comando:
+```
+git checkout -b <nomeDaBranch>
+```
 
-## Collaborate with your team
+Por exemplo:
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+```
+git checkout -b feature/US01-userType
+```
 
-## Test and Deploy
+Assim que a branch for criada execute o seguinte comando:
 
-Use the built-in continuous integration in GitLab.
+```
+git push --set-upstream origin <nome da branch>
+```
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+Dessa forma a branch será enviada para o repositório remoto no GitLab
 
-***
+## Commits
 
-# Editing this README
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!).  Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
+Antes de fazer o commit é necessário preparar as alterações. Temos 2 maneiras de fazer isso:
 
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
 
-## Name
-Choose a self-explaining name for your project.
+O comando `git add .` prepara todas as alterações que foram feitas localmente sejam adicionadas ao commit:
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+```
+git add .
+```
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+ O comando `git add <nomeDoArquivo>` prepara apenas as alterações do arquivo informado sejam adicionadas ao commit.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+```
+git add <nomeDoArquivo>
+```
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+Após adicionar as alterações é necessário commitar elas usando o comando 
+```
+git commit -m "comentario-do-commit"
+```
+Faça commit sempre que alguma funcionalidade for alterada, assim garantindo um método fácil de recuperação do código (caso necessário).
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Após o commit, compartilhe as alterações no repositório remoto utilizando o comando `git push`
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+```
+git push 
+```
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+## Merge Requests
 
-## License
-For open source projects, say how it is licensed.
+Assim que uma tarefa for finalizada execute o seguinte comando:
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+```
+git pull origin develop
+```
+
+O mesmo irá garantir que sua branch está atualizada com a branch develop (caso haja conflitos, resolva-os) e realize um commit com o seguinte nome:
+
+```
+Merge branch 'dev' into '<nome da branch>'
+```
+
+Depois de estar com a sua branch remota pronta para merge, crie um Merge Request no GitLab e preencha com as seguintes informações:
+
+* Source Branch: Sua branch.
+* Target Branch: branch `develop`.
+* Título: `<código da tarefa>-<nome da tarefa utilizando camelCase quando necessário>`
+* Descrição: Descrição da tarefa e/ou das mudanças no código
+
+Assim que for criado o Merge Request, passe o card da sua tarefa no trello para `"Review"` e avise um *AGES 3*, *AGES 4* ou líder da Squad.
