@@ -23,13 +23,10 @@ dependencies {
 	implementation 'com.auth0:java-jwt:4.4.0'
 	implementation 'com.microsoft.sqlserver:mssql-jdbc:12.4.1.jre11'
 	implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
-	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	runtimeOnly 'com.h2database:h2'
-
 }
 
 tasks.named('test') {
@@ -37,5 +34,9 @@ tasks.named('test') {
 }
 
 jar {
-	enabled = false
+	enabled = true // Permitir geração do JAR
+}
+
+tasks.named('bootRun') {
+	jvmArgs = ['-Dspring.profiles.active=dev'] // Perfil de desenvolvimento (opcional)
 }
