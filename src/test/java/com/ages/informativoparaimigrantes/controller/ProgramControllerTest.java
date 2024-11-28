@@ -219,6 +219,143 @@ public class ProgramControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    // Teste com data de inscrição passada
+    @Test
+    void testGetProgramsWithPastEnrollmentDate() throws Exception {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date pastDate = dateFormat.parse("2023-01-01");
+        Date futureDate = dateFormat.parse("2025-01-01");
+
+        ProgramResponseDTO pastProgram = ProgramResponseDTO.builder()
+                .id(1L)
+                .title("Past Program")
+                .description("Expired Program")
+                .enrollmentInitialDate(pastDate)
+                .status(Status.PENDING)
+                .location("Location A")
+                .programType(ProgramType.HIGHER)
+                .file("file1.pdf")
+                .feedback("any")
+                .build();
+
+        ProgramResponseDTO futureProgram = ProgramResponseDTO.builder()
+                .id(2L)
+                .title("Future Program")
+                .description("Upcoming Program")
+                .enrollmentInitialDate(futureDate)
+                .status(Status.PENDING)
+                .location("Location B")
+                .programType(ProgramType.HIGHER)
+                .file("file2.pdf")
+                .feedback("any")
+                .build();
+
+        // Mock do serviço para excluir programas com inscrição passada
+        when(service.getFiltered(any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(List.of(futureProgram));
+
+        // Teste de filtragem de programas com data de inscrição no passado
+        mockMvc.perform(get(baseEndpoint + "?status=PENDING"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(futureProgram))));
+    }
+
+    // Teste com programas filtrados por data de inscrição
+    @Test
+    void testGetProgramsOrderedByEnrollmentDate() throws Exception {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date futureDate = dateFormat.parse("2025-01-01");
+        Date pastDate = dateFormat.parse("2023-01-01");
+
+        // Programas mockados
+        ProgramResponseDTO program1 = ProgramResponseDTO.builder()
+                .id(1L)
+                .title("Program A")
+                .description("Description")
+                .enrollmentInitialDate(futureDate)
+                .status(Status.PENDING)
+                .location("Location A")
+                .programType(ProgramType.HIGHER)
+                .file("file1.pdf")
+                .feedback("any")
+                .build();
+
+        ProgramResponseDTO program2 = ProgramResponseDTO.builder()
+                .id(2L)
+                .title("Program B")
+                .description("Description")
+                .enrollmentInitialDate(pastDate)
+                .status(Status.PENDING)
+                .location("Location B")
+                .programType(ProgramType.HIGHER)
+                .file("file2.pdf")
+                .feedback("any")
+                .build();
+
+        ProgramResponseDTO program3 = ProgramResponseDTO.builder()
+                .id(3L)
+                .title("Program C")
+                .description("Description")
+                .enrollmentInitialDate(null) // Sem data de inscrição
+                .status(Status.PENDING)
+                .location("Location C")
+                .programType(ProgramType.HIGHER)
+                .file("file3.pdf")
+                .feedback("any")
+                .build();
+
+        // Mock do serviço
+        when(service.getFiltered(any(), any(), any(), any(), any(), any(), any()))
+                .thenReturn(List.of(program2, program1, program3));
+
+        // Teste com ordenação por data de inscrição
+        mockMvc.perform(get(baseEndpoint + "?sortBy=enrollmentInitialDate"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(program1, program2, program3))));
+    }
+
+    // Teste com exibicao dinamica de programas com alteracoes nos filtros
+    @Test
+    void testGetProgramsWithFiltersApplied() throws Exception {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date futureDate = dateFormat.parse("2025-01-01");
+        Date pastDate = dateFormat.parse("2023-01-01");
+
+        // Programas mockados
+        ProgramResponseDTO program1 = ProgramResponseDTO.builder()
+                .id(1L)
+                .title("Program A")
+                .description("Description")
+                .enrollmentInitialDate(futureDate)
+                .status(Status.PENDING)
+                .location("São Paulo")
+                .programType(ProgramType.HIGHER)
+                .file("file1.pdf")
+                .feedback("any")
+                .build();
+
+        ProgramResponseDTO program2 = ProgramResponseDTO.builder()
+                .id(2L)
+                .title("Program B")
+                .description("Description")
+                .enrollmentInitialDate(pastDate)
+                .status(Status.PENDING)
+                .location("São Paulo")
+                .programType(ProgramType.HIGHER)
+                .file("file2.pdf")
+                .feedback("any")
+                .build();
+
+        // Mock do serviço para filtrar por localização e status
+        when(service.getFiltered(Status.PENDING, null, null, null, "São Paulo", futureDate, null))
+                .thenReturn(List.of(program1));
+
+        // Teste de exibição dinâmica após filtro aplicado
+        mockMvc.perform(get(baseEndpoint + "?status=PENDING&location=São Paulo"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(program1))));
+    }
+
     // Testes individuais
 
     // Filtro por linguagem
