@@ -3,6 +3,7 @@ package com.ages.informativoparaimigrantes.dto;
 import com.ages.informativoparaimigrantes.domain.Tag;
 import com.ages.informativoparaimigrantes.enums.ProgramType;
 import com.ages.informativoparaimigrantes.enums.Status;
+import jdk.jshell.Snippet;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,9 +13,9 @@ import java.util.Date;
 import java.util.List;
 
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 
 public class ProgramResponseDTO {
 

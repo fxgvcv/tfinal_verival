@@ -1,54 +1,80 @@
-//package com.ages.informativoparaimigrantes.controller;
-//
-//import com.ages.informativoparaimigrantes.domain.Tag;
-//import com.ages.informativoparaimigrantes.dto.ProgramResponseDTO;
-//import com.ages.informativoparaimigrantes.enums.Status;
-//import com.ages.informativoparaimigrantes.service.ProgramServiceImpl;
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import org.junit.jupiter.api.Test;
-//import org.junit.jupiter.api.extension.ExtendWith;
-//import org.mockito.junit.jupiter.MockitoExtension;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-//import org.springframework.boot.test.mock.mockito.MockBean;
-//import org.springframework.test.web.servlet.MockMvc;
-//
-//import java.text.DateFormat;
-//import java.text.SimpleDateFormat;
-//import java.util.Date;
-//import java.util.List;
-//
-//import static org.junit.jupiter.api.Assertions.assertEquals;
-//import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.Mockito.when;
-//import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-//import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-//
-//@ExtendWith(MockitoExtension.class)
-//@WebMvcTest(ProgramController.class)
-//public class ProgramControllerTest {
-//
-//    @Autowired
-//    private MockMvc mockMvc;
-//
-//    private String baseEndpoint = "/program";
-//
-//    @MockBean
-//    private ProgramServiceImpl service;
-//
-//    // 1. Testa o retorno de uma lista de programas
-//    @Test
-//    public void getProgramsShouldReturnProgramList() throws Exception {
-//        List<ProgramResponseDTO> mockPrograms = List.of(
-//                new ProgramResponseDTO(1L, "any", "any", "any", "any", null, null, null, null, Status.PENDING, "any", "any", null, "any", null, "any"));
-//
-//        when(service.getFiltered(any(), any(), any(), any(), any(), any(), any())).thenReturn(mockPrograms);
-//
-//        mockMvc.perform(get(baseEndpoint))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(new ObjectMapper().writeValueAsString(mockPrograms)));
-//    }
+package com.ages.informativoparaimigrantes.controller;
+
+import com.ages.informativoparaimigrantes.domain.Tag;
+import com.ages.informativoparaimigrantes.dto.ProgramResponseDTO;
+import com.ages.informativoparaimigrantes.enums.ProgramType;
+import com.ages.informativoparaimigrantes.enums.Status;
+import com.ages.informativoparaimigrantes.service.ProgramServiceImpl;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@ExtendWith(MockitoExtension.class)
+@WebMvcTest(ProgramController.class)
+public class ProgramControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    private String baseEndpoint = "/program";
+
+    @MockBean
+    private ProgramServiceImpl service;
+
+    // 1. Testa o retorno de uma lista de programas
+    @Test
+    public void getProgramsShouldReturnProgramList() throws Exception {
+        // Criação de uma lista mockada de ProgramResponseDTO
+        List<ProgramResponseDTO> mockPrograms = List.of(
+                ProgramResponseDTO.builder()
+                        .id(1L)
+                        .title("any")
+                        .description("any")
+                        .link("any")
+                        .language("any")
+                        .programInitialDate(null)
+                        .programEndDate(null)
+                        .enrollmentInitialDate(null)
+                        .enrollmentEndDate(null)
+                        .status(Status.PENDING)
+                        .institutionEmail("any")
+                        .location("any")
+                        .tags(List.of(
+                                new Tag(1L, "Education", "PT-BR"),
+                                new Tag(2L, "Work", "EN")
+                        ))
+                        .file("any")
+                        .programType(ProgramType.HIGHER)
+                        .feedback("any")
+                        .build()
+        );
+
+        // Mock do serviço
+        when(service.getFiltered(any(), any(), any(), any(), any(), any(), any())).thenReturn(mockPrograms);
+
+        // Executa a requisição e verifica o retorno
+        mockMvc.perform(get(baseEndpoint))
+                .andExpect(status().isOk())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(mockPrograms)));
+    }
+}
 //
 //    // 2. Testa os filtros com status e localização
 //    @Test

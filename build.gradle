@@ -17,19 +17,23 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-validation:2.5.4'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'com.auth0:java-jwt:4.4.0'
 	implementation 'com.microsoft.sqlserver:mssql-jdbc:12.4.1.jre11'
 	implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// Dependência do Lombok
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	// Banco de dados H2 para desenvolvimento (runtimeOnly, usado apenas em ambiente de desenvolvimento)
 	runtimeOnly 'com.h2database:h2'
 }
 
-tasks.named('test') {
+tasks.withType(Test) {
 	useJUnitPlatform()
 }
 
