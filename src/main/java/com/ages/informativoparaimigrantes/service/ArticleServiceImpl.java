@@ -18,11 +18,14 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
 public class ArticleServiceImpl implements IArticleService {
 
+    private final IArticleRepository repository;
+
     @Autowired
-    private IArticleRepository repository;
+    public ArticleServiceImpl(IArticleRepository repository) {
+        this.repository = repository;
+    }
 
     public List<Article> getArticles(Long articleId, String language){
         return repository.getArticles(articleId, language);

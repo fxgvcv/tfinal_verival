@@ -9,6 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	sourceCompatibility = '11'
+	targetCompatibility = '11'  // Adicionando targetCompatibility
 }
 
 repositories {
@@ -16,6 +17,7 @@ repositories {
 }
 
 dependencies {
+	// Spring Boot Dependencies
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -23,18 +25,22 @@ dependencies {
 	implementation 'com.auth0:java-jwt:4.4.0'
 	implementation 'com.microsoft.sqlserver:mssql-jdbc:12.4.1.jre11'
 	implementation 'org.springdoc:springdoc-openapi-ui:1.7.0'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
-	// Dependência do Lombok
+	// Test Dependencies
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'  // Explicit JUnit dependency
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'  // Explicit JUnit runtime dependency
+
+	// Lombok for reduced boilerplate code
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
 
-	// Banco de dados H2 para desenvolvimento (runtimeOnly, usado apenas em ambiente de desenvolvimento)
+	// Banco de dados H2 para desenvolvimento (usado apenas em ambiente de desenvolvimento)
 	runtimeOnly 'com.h2database:h2'
 }
 
-tasks.withType(Test) {
-	useJUnitPlatform()
+tasks.withType(Test).configureEach {
+	useJUnitPlatform()  // Garante o uso do JUnit Platform para testes
 }
 
 jar {
@@ -44,3 +50,4 @@ jar {
 tasks.named('bootRun') {
 	jvmArgs = ['-Dspring.profiles.active=dev'] // Perfil de desenvolvimento (opcional)
 }
+

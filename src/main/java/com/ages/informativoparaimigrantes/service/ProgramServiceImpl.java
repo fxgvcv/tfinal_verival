@@ -160,7 +160,6 @@ public class ProgramServiceImpl implements IProgramService {
         return convertListOfEntityToListOfResponseDTO(repository.findProgramByInstitutionEmail(email));
     }
 
-
     public List<ProgramResponseDTO> getAll () {
         return convertListOfEntityToListOfResponseDTO(repository.findAll());
     }

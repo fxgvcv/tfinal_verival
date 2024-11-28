@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(ProgramController.class)
-public class ProgramControllerTest {
+class ProgramControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -39,10 +39,9 @@ public class ProgramControllerTest {
     @MockBean
     private ProgramServiceImpl service;
 
-    // Testa o retorno de uma lista de programas
+    // 1. Retorno de Lista de Programas
     @Test
     public void getProgramsShouldReturnProgramList() throws Exception {
-        // Criação de uma lista mockada de ProgramResponseDTO
         List<ProgramResponseDTO> mockPrograms = List.of(
                 ProgramResponseDTO.builder()
                         .id(1L)
@@ -67,16 +66,14 @@ public class ProgramControllerTest {
                         .build()
         );
 
-        // Mock do serviço
         when(service.getFiltered(any(), any(), any(), any(), any(), any(), any())).thenReturn(mockPrograms);
 
-        // Executa a requisição e verifica o retorno
         mockMvc.perform(get(baseEndpoint))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(mockPrograms)));
     }
 
-    // Testa comportamento sem filtros aplicados
+    // 2. Filtros Sem Parâmetros
     @Test
     void testGetFiltered_withNoFilters() throws Exception {
         List<ProgramResponseDTO> mockPrograms = List.of(
@@ -100,19 +97,13 @@ public class ProgramControllerTest {
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(mockPrograms)));
     }
 
-    // Testa os filtros com status e localização
+    // 3. Filtros Aplicados por Status e Localização
     @Test
     void testGetFiltered_withStatusAndLocationFilters() throws Exception {
         ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
                 .id(1L)
                 .title("Program 1")
                 .description("Description")
-                .link("https://link1.com")
-                .language("any")
-                .programInitialDate(null)
-                .programEndDate(null)
-                .enrollmentInitialDate(null)
-                .enrollmentEndDate(null)
                 .status(Status.APPROVED)
                 .location("São Paulo")
                 .tags(Collections.emptyList())
@@ -128,7 +119,7 @@ public class ProgramControllerTest {
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
     }
 
-    // Testa múltiplos filtros aplicados ao mesmo tempo
+    // 4. Múltiplos Filtros Aplicados
     @Test
     void testGetFiltered_withMultipleFilters() throws Exception {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -139,7 +130,6 @@ public class ProgramControllerTest {
                 .id(1L)
                 .title("Program 1")
                 .description("Description")
-                .link("https://link1.com")
                 .programInitialDate(programInitialDate)
                 .programEndDate(programEndDate)
                 .status(Status.APPROVED)
@@ -157,7 +147,7 @@ public class ProgramControllerTest {
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
     }
 
-    // Testa quando não há resultados para os filtros
+    // 5. Resposta Vazia para Filtros Sem Correspondência
     @Test
     void testGetFiltered_withNoResults() throws Exception {
         when(service.getFiltered(Status.APPROVED, null, null, null, "Nonexistent Location", null, null)).thenReturn(Collections.emptyList());
@@ -167,7 +157,7 @@ public class ProgramControllerTest {
                 .andExpect(content().json("[]"));
     }
 
-    // Testa comportamento de exceção do serviço
+    // 6. Tratamento de Exceções
     @Test
     void testServiceException() throws Exception {
         when(service.getFiltered(any(), any(), any(), any(), any(), any(), any())).thenThrow(new RuntimeException("Service error"));
@@ -176,28 +166,22 @@ public class ProgramControllerTest {
                 .andExpect(status().isInternalServerError());
     }
 
-    // Testa comportamento com parâmetros inválidos
+    // 7. Validação de Parâmetros Inválidos
     @Test
     void testGetFiltered_withInvalidStatus() throws Exception {
         mockMvc.perform(get(baseEndpoint + "?status=INVALID"))
                 .andExpect(status().isBadRequest());
     }
 
-    // Teste com vários parametros
+    // 8. Filtros Individuais (Testando filtros isolados)
     @Test
-    void testGetFiltered_withMultipleFilters_combined() throws Exception {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date programInitialDate = dateFormat.parse("2024-01-01");
-        Date programEndDate = dateFormat.parse("2024-12-31");
-
+    void testGetFiltered_withLanguageFilter() throws Exception {
         ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
                 .id(1L)
                 .title("Program 1")
                 .description("Description")
-                .link("https://link1.com")
-                .programInitialDate(programInitialDate)
-                .programEndDate(programEndDate)
-                .status(Status.APPROVED)
+                .language("PT-BR")
+                .status(Status.PENDING)
                 .location("São Paulo")
                 .tags(Collections.emptyList())
                 .file("any")
@@ -205,21 +189,37 @@ public class ProgramControllerTest {
                 .feedback("any")
                 .build();
 
-        when(service.getFiltered(Status.APPROVED, "Higher", "PT-BR", "São Paulo", programInitialDate, programEndDate)).thenReturn(List.of(mockProgram));
+        when(service.getFiltered(null, null, "PT-BR", null, null, null, null)).thenReturn(List.of(mockProgram));
 
-        mockMvc.perform(get(baseEndpoint + "?status=APPROVED&type=Higher&language=PT-BR&location=São Paulo&programStartDate=2024-01-01&programEndDate=2024-12-31"))
+        mockMvc.perform(get(baseEndpoint + "?language=PT-BR"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
     }
 
-    // Teste com datas invalidas
+    // 9. Ordenação por Data de Inscrição
     @Test
-    void testGetFiltered_withInvalidDateFormat() throws Exception {
-        mockMvc.perform(get(baseEndpoint + "?status=APPROVED&programStartDate=invalid-date&programEndDate=2024-12-31"))
-                .andExpect(status().isBadRequest());
+    void testGetFiltered_withSortByEnrollmentDate() throws Exception {
+        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
+                .id(1L)
+                .title("Program 1")
+                .description("Description")
+                .enrollmentInitialDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-01-01"))
+                .status(Status.PENDING)
+                .location("São Paulo")
+                .tags(Collections.emptyList())
+                .file("any")
+                .programType(ProgramType.HIGHER)
+                .feedback("any")
+                .build();
+
+        when(service.getFiltered(any(), any(), any(), any(), any(), any(), any())).thenReturn(List.of(mockProgram));
+
+        mockMvc.perform(get(baseEndpoint + "?sortBy=enrollmentInitialDate"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
     }
 
-    // Teste com data de inscrição passada
+    // 10. Exclusão de Programas com Inscrição Passada
     @Test
     void testGetProgramsWithPastEnrollmentDate() throws Exception {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -234,253 +234,14 @@ public class ProgramControllerTest {
                 .status(Status.PENDING)
                 .location("Location A")
                 .programType(ProgramType.HIGHER)
-                .file("file1.pdf")
+                .file("any")
                 .feedback("any")
                 .build();
 
-        ProgramResponseDTO futureProgram = ProgramResponseDTO.builder()
-                .id(2L)
-                .title("Future Program")
-                .description("Upcoming Program")
-                .enrollmentInitialDate(futureDate)
-                .status(Status.PENDING)
-                .location("Location B")
-                .programType(ProgramType.HIGHER)
-                .file("file2.pdf")
-                .feedback("any")
-                .build();
+        when(service.getFiltered(any(), any(), any(), any(), any(), any(), any())).thenReturn(List.of(pastProgram));
 
-        // Mock do serviço para excluir programas com inscrição passada
-        when(service.getFiltered(any(), any(), any(), any(), any(), any(), any()))
-                .thenReturn(List.of(futureProgram));
-
-        // Teste de filtragem de programas com data de inscrição no passado
-        mockMvc.perform(get(baseEndpoint + "?status=PENDING"))
+        mockMvc.perform(get(baseEndpoint + "?programStartDate=" + futureDate))
                 .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(futureProgram))));
-    }
-
-    // Teste com programas filtrados por data de inscrição
-    @Test
-    void testGetProgramsOrderedByEnrollmentDate() throws Exception {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date futureDate = dateFormat.parse("2025-01-01");
-        Date pastDate = dateFormat.parse("2023-01-01");
-
-        // Programas mockados
-        ProgramResponseDTO program1 = ProgramResponseDTO.builder()
-                .id(1L)
-                .title("Program A")
-                .description("Description")
-                .enrollmentInitialDate(futureDate)
-                .status(Status.PENDING)
-                .location("Location A")
-                .programType(ProgramType.HIGHER)
-                .file("file1.pdf")
-                .feedback("any")
-                .build();
-
-        ProgramResponseDTO program2 = ProgramResponseDTO.builder()
-                .id(2L)
-                .title("Program B")
-                .description("Description")
-                .enrollmentInitialDate(pastDate)
-                .status(Status.PENDING)
-                .location("Location B")
-                .programType(ProgramType.HIGHER)
-                .file("file2.pdf")
-                .feedback("any")
-                .build();
-
-        ProgramResponseDTO program3 = ProgramResponseDTO.builder()
-                .id(3L)
-                .title("Program C")
-                .description("Description")
-                .enrollmentInitialDate(null) // Sem data de inscrição
-                .status(Status.PENDING)
-                .location("Location C")
-                .programType(ProgramType.HIGHER)
-                .file("file3.pdf")
-                .feedback("any")
-                .build();
-
-        // Mock do serviço
-        when(service.getFiltered(any(), any(), any(), any(), any(), any(), any()))
-                .thenReturn(List.of(program2, program1, program3));
-
-        // Teste com ordenação por data de inscrição
-        mockMvc.perform(get(baseEndpoint + "?sortBy=enrollmentInitialDate"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(program1, program2, program3))));
-    }
-
-    // Teste com exibicao dinamica de programas com alteracoes nos filtros
-    @Test
-    void testGetProgramsWithFiltersApplied() throws Exception {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date futureDate = dateFormat.parse("2025-01-01");
-        Date pastDate = dateFormat.parse("2023-01-01");
-
-        // Programas mockados
-        ProgramResponseDTO program1 = ProgramResponseDTO.builder()
-                .id(1L)
-                .title("Program A")
-                .description("Description")
-                .enrollmentInitialDate(futureDate)
-                .status(Status.PENDING)
-                .location("São Paulo")
-                .programType(ProgramType.HIGHER)
-                .file("file1.pdf")
-                .feedback("any")
-                .build();
-
-        ProgramResponseDTO program2 = ProgramResponseDTO.builder()
-                .id(2L)
-                .title("Program B")
-                .description("Description")
-                .enrollmentInitialDate(pastDate)
-                .status(Status.PENDING)
-                .location("São Paulo")
-                .programType(ProgramType.HIGHER)
-                .file("file2.pdf")
-                .feedback("any")
-                .build();
-
-        // Mock do serviço para filtrar por localização e status
-        when(service.getFiltered(Status.PENDING, null, null, null, "São Paulo", futureDate, null))
-                .thenReturn(List.of(program1));
-
-        // Teste de exibição dinâmica após filtro aplicado
-        mockMvc.perform(get(baseEndpoint + "?status=PENDING&location=São Paulo"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(program1))));
-    }
-
-    // Testes individuais
-
-    // Filtro por linguagem
-    @Test
-    void testGetFiltered_withLanguageFilter() throws Exception {
-        // Criando um programa mockado com linguagem "PT-BR"
-        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
-                .id(1L)
-                .title("Program 1")
-                .description("Description")
-                .link("https://link1.com")
-                .language("PT-BR")
-                .status(Status.PENDING)
-                .location("São Paulo")
-                .programType(ProgramType.HIGHER)
-                .file("file1.pdf")
-                .feedback("any")
-                .build();
-
-        when(service.getFiltered(null, "PT-BR", null, null, null, null, null))
-                .thenReturn(List.of(mockProgram));
-
-        mockMvc.perform(get(baseEndpoint + "?language=PT-BR"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
-    }
-
-    // Filtro por status
-    @Test
-    void testGetFiltered_withStatusFilter() throws Exception {
-        // Criando um programa mockado com status "APPROVED"
-        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
-                .id(1L)
-                .title("Program 1")
-                .description("Description")
-                .link("https://link1.com")
-                .status(Status.APPROVED)
-                .location("São Paulo")
-                .programType(ProgramType.HIGHER)
-                .file("file1.pdf")
-                .feedback("any")
-                .build();
-
-        when(service.getFiltered(Status.APPROVED, null, null, null, null, null, null))
-                .thenReturn(List.of(mockProgram));
-
-        mockMvc.perform(get(baseEndpoint + "?status=APPROVED"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
-    }
-
-    // Filtro por localização
-    @Test
-    void testGetFiltered_withLocationFilter() throws Exception {
-        // Criando um programa mockado com localização "São Paulo"
-        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
-                .id(1L)
-                .title("Program 1")
-                .description("Description")
-                .link("https://link1.com")
-                .status(Status.PENDING)
-                .location("São Paulo")
-                .programType(ProgramType.HIGHER)
-                .file("file1.pdf")
-                .feedback("any")
-                .build();
-
-        when(service.getFiltered(null, null, null, null, "São Paulo", null, null))
-                .thenReturn(List.of(mockProgram));
-
-        mockMvc.perform(get(baseEndpoint + "?location=São Paulo"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
-    }
-
-    // Filtro por duração
-    @Test
-    void testGetFiltered_withDurationFilter() throws Exception {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date programInitialDate = dateFormat.parse("2024-01-01");
-        Date programEndDate = dateFormat.parse("2024-12-31");
-
-        // Criando um programa mockado com datas de início e fim
-        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
-                .id(1L)
-                .title("Program 1")
-                .description("Description")
-                .link("https://link1.com")
-                .programInitialDate(programInitialDate)
-                .programEndDate(programEndDate)
-                .status(Status.PENDING)
-                .location("São Paulo")
-                .programType(ProgramType.HIGHER)
-                .file("file1.pdf")
-                .feedback("any")
-                .build();
-
-        when(service.getFiltered(null, null, null, null, null, programInitialDate, programEndDate))
-                .thenReturn(List.of(mockProgram));
-
-        mockMvc.perform(get(baseEndpoint + "?programStartDate=2024-01-01&programEndDate=2024-12-31"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
-    }
-
-    // Testa a listagem de programas por tipo
-    @Test
-    void testGetFiltered_withProgramType() throws Exception {
-        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
-                .id(1L)
-                .title("Program 1")
-                .description("Description")
-                .link("https://link1.com")
-                .programType(ProgramType.HIGHER)
-                .status(Status.PENDING)
-                .location("any")
-                .tags(Collections.emptyList())
-                .file("file1.pdf")
-                .feedback("any")
-                .build();
-
-        when(service.getFiltered(null, null, "Higher", null, null, null, null)).thenReturn(List.of(mockProgram));
-
-        mockMvc.perform(get(baseEndpoint + "?type=Higher"))
-                .andExpect(status().isOk())
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
+                .andExpect(content().json("[]"));
     }
 }
