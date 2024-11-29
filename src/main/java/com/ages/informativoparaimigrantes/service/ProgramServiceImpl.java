@@ -258,4 +258,44 @@ public class ProgramServiceImpl implements IProgramService {
     public long getCountByStatus(Status status) {
         return repository.countByStatus(status);
     }
+
+    public List<ProgramResponseDTO> getProgramsSortedByEnrollmentDate() {
+        List<Program> programs = repository.findAll();
+
+        // Ordena primeiro pela data de inscrição e, se for null, pela ordem alfabética do nome
+        programs.sort((p1, p2) -> {
+            if (p1.getEnrollmentInitialDate() == null && p2.getEnrollmentInitialDate() == null) {
+                // Ambos sem data, ordena por nome
+                return p1.getTitle().compareTo(p2.getTitle());
+            } else if (p1.getEnrollmentInitialDate() == null) {
+                return 1; // p1 vai para o final
+            } else if (p2.getEnrollmentInitialDate() == null) {
+                return -1; // p2 vai para o final
+            }
+            // Caso haja data, ordena por data
+            return p2.getEnrollmentInitialDate().compareTo(p1.getEnrollmentInitialDate());
+        });
+
+        // Converte a lista de Program para ProgramResponseDTO
+        return programs.stream()
+                .map(program -> new ProgramResponseDTO(
+                        program.getId(),
+                        program.getTitle(),
+                        program.getDescription(),
+                        program.getLink(),
+                        program.getLanguage(),
+                        program.getProgramInitialDate(),
+                        program.getProgramEndDate(),
+                        program.getEnrollmentInitialDate(),
+                        program.getEnrollmentEndDate(),
+                        program.getStatus(),
+                        program.getInstitutionEmail(),
+                        program.getLocation(),
+                        program.getTags(),
+                        program.getDataFile(),
+                        program.getProgramType(),
+                        program.getFeedback()
+                ))
+                .collect(Collectors.toList());
+    }
 }

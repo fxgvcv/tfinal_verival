@@ -22,6 +22,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
@@ -219,8 +220,6 @@ public class ProgramServiceTest {
     @Test
     public void testProgramsSortingByEnrollmentDate() {
         // Dado que temos dois programas, um com data de inscrição e outro sem
-        // Dado que temos dois programas, um com data de inscrição e outro sem
-        // Criando a data com o tipo java.util.Date
         Date dateWithEnrollment = Date.from(LocalDate.of(2024, 12, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
 
         Program programWithDate = new Program(1L, "institution1@example.com", "Program 1", "Description 1", "http://link1.com", "English",
@@ -229,38 +228,35 @@ public class ProgramServiceTest {
         Program programWithoutDate = new Program(2L, "institution1@example.com", "Program 2", "Description 2", "http://link2.com", "English",
                 null, null, null, null, Status.APPROVED, "Location 2", null, null, ProgramType.HIGHER, null);
 
-        // Adicionando-os à lista
-        List<Program> programs = Arrays.asList(programWithDate, programWithoutDate);
+        // Simulando o comportamento do repositório (findAll ou qualquer método usado no serviço)
+        when(programRepository.findAll()).thenReturn(Arrays.asList(programWithDate, programWithoutDate));
 
-        // Ordenando a lista de programas
-        programs.sort((p1, p2) -> {
-            if (p1.getEnrollmentInitialDate() == null) return 1; // coloca os programas sem data no final
-            if (p2.getEnrollmentEndDate() == null) return -1;
-            return p1.getEnrollmentInitialDate().compareTo(p2.getEnrollmentEndDate());
-        });
+        // Chama o serviço para recuperar os programas
+        List<ProgramResponseDTO> sortedPrograms = programService.getProgramsSortedByEnrollmentDate();
 
-        // Validando se a ordem está correta
-        assertEquals("Program 1", programs.get(0).getTitle());  // O programa com data de inscrição deve vir primeiro
-        assertEquals("Program 2", programs.get(1).getTitle());  // O programa sem data de inscrição deve vir depois
+        // Verificando se o programa com data de inscrição está em primeiro
+        assertEquals("Program 1", sortedPrograms.get(0).getTitle());
+        assertEquals("Program 2", sortedPrograms.get(1).getTitle());
     }
 
-//    @Test
-//    public void testProgramsWithoutEnrollmentDateSortingByName() {
-//        // Dado que temos dois programas sem data de inscrição, mas com nomes diferentes
-//        Program programWithoutDate1 = new Program("Program Z", null, "Description 1");
-//        Program programWithoutDate2 = new Program("Program A", null, "Description 2");
-//
-//        // Adicionando-os à lista
-//        List<Program> programs = Arrays.asList(programWithoutDate1, programWithoutDate2);
-//
-//        // Ordenando a lista de programas pelo nome
-//        programs.sort((p1, p2) -> p1.getTitle().compareTo(p2.getTitle()));
-//
-//        // Validando se a ordem está correta
-//        assertEquals("Program A", programs.get(0).getTitle());  // "Program A" deve vir antes de "Program Z"
-//        assertEquals("Program Z", programs.get(1).getTitle());
-//    }
+    @Test
+    public void testProgramsWithoutEnrollmentDateSortingByName() {
+        Program programOne = new Program(1L, "institution1@example.com", "ZNX Program", "Description 1", "http://link1.com", "English",
+                null, null, null, null, Status.APPROVED, "Location 1", null, null, ProgramType.HIGHER, null);
 
+        Program programTwo = new Program(2L, "institution1@example.com", "ABCedário", "Description 2", "http://link2.com", "English",
+                null, null, null, null, Status.APPROVED, "Location 2", null, null, ProgramType.HIGHER, null);
+
+        // Simulando o comportamento do repositório
+        when(programRepository.findAll()).thenReturn(Arrays.asList(programOne, programTwo));
+
+        // Chama o serviço para recuperar os programas ordenados
+        List<ProgramResponseDTO> sortedPrograms = programService.getProgramsSortedByEnrollmentDate();
+
+        // Verifica se a ordenação foi feita corretamente pelo nome
+        assertEquals("ABCedário", sortedPrograms.get(0).getTitle());  // "ABCedário" deve vir primeiro
+        assertEquals("ZNX Program", sortedPrograms.get(1).getTitle());  // "ZNX Program" deve vir depois
+    }
 
 //    @Test
 //    public void testProgramsWithoutEnrollmentDateSortingByName() {
