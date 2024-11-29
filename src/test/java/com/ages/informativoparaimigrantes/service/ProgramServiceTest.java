@@ -29,7 +29,6 @@ public class ProgramServiceTest {
     @MockBean
     private IProgramRepository programRepository;  // Repositório mockado
 
-    // Teste para filtro de idioma
     @Test
     public void testGetFilteredPrograms_withLanguageFilter() {
         // Arrange: Criar programas fictícios para simulação
@@ -40,12 +39,12 @@ public class ProgramServiceTest {
 
         // Simula o comportamento do repositório para quando o filtro de idioma é "English"
         when(programRepository.findWithFilters(
-                eq(null),  // status
-                eq(null),  // institutionEmail
-                eq(null),  // programType
-                eq("English"),  // language
-                eq(null),  // location
-                eq(true)   // openSubscription
+                eq(Status.APPROVED),     // status
+                eq(null),                // institutionEmail
+                eq(null),                // programType
+                eq("English"),           // language
+                eq(null),                // location
+                eq(null)                 // openSubscription
         )).thenReturn(Arrays.asList(program1));
 
         // Act: Chama o serviço para obter programas filtrados por idioma
@@ -62,6 +61,7 @@ public class ProgramServiceTest {
         // Assert: Verifica se o filtro está funcionando corretamente
         assertEquals(1, filteredPrograms.size());
         assertEquals("Program 1", filteredPrograms.get(0).getTitle());
+        assertEquals("English", filteredPrograms.get(0).getLanguage());  // Verificação adicional
     }
 
 //    // Teste para filtro de status
