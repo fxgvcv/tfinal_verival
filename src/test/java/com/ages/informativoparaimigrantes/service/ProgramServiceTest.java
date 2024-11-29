@@ -258,49 +258,34 @@ public class ProgramServiceTest {
         assertEquals("ZNX Program", sortedPrograms.get(1).getTitle());  // "ZNX Program" deve vir depois
     }
 
-//    @Test
-//    public void testProgramsWithoutEnrollmentDateSortingByName() {
-//        // Dado que temos dois programas sem data de inscrição, mas com nomes diferentes
-//        Program programWithoutDate1 = new Program("Program Z", null, "Description 1");
-//        Program programWithoutDate2 = new Program("Program A", null, "Description 2");
-//
-//        // Adicionando-os à lista
-//        List<Program> programs = Arrays.asList(programWithoutDate1, programWithoutDate2);
-//
-//        // Ordenando a lista de programas pelo nome
-//        programs.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
-//
-//        // Validando se a ordem está correta
-//        assertEquals("Program A", programs.get(0).getName());  // "Program A" deve vir antes de "Program Z"
-//        assertEquals("Program Z", programs.get(1).getName());
-//    }
-//
-//    @Test
-//    public void testProgramsWithAndWithoutEnrollmentDateSortedByDateThenName() {
-//        // Criando programas com e sem data de inscrição
-//        Program programWithDate = new Program("Program 1", LocalDate.of(2024, 12, 1), "Description 1");
-//        Program programWithoutDate1 = new Program("Program Z", null, "Description 1");
-//        Program programWithoutDate2 = new Program("Program A", null, "Description 2");
-//
-//        // Adicionando-os à lista
-//        List<Program> programs = Arrays.asList(programWithDate, programWithoutDate1, programWithoutDate2);
-//
-//        // Ordenando a lista de programas, primeiro pela data de inscrição, depois por nome
-//        programs.sort((p1, p2) -> {
-//            if (p1.getEnrollmentDate() == null) return 1; // coloca os programas sem data no final
-//            if (p2.getEnrollmentDate() == null) return -1;
-//            int dateComparison = p1.getEnrollmentDate().compareTo(p2.getEnrollmentDate());
-//            if (dateComparison != 0) return dateComparison;
-//
-//            // Se as datas forem iguais, ordenar por nome
-//            return p1.getName().compareTo(p2.getName());
-//        });
-//
-//        // Validando se a ordem está correta
-//        assertEquals("Program 1", programs.get(0).getName());  // O programa com data de inscrição deve vir primeiro
-//        assertEquals("Program A", programs.get(1).getName());  // O programa sem data de inscrição, mas com nome A, deve vir depois
-//        assertEquals("Program Z", programs.get(2).getName());  // O programa sem data de inscrição, mas com nome Z, deve vir por último
-//    }
+    @Test
+    public void testProgramsWithAndWithoutEnrollmentDateSortedByDateThenName() {
+        Date dateWithEnrollment = Date.from(LocalDate.of(2024, 12, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        // Criando programas com e sem data de inscrição
+        Program programWithDate = new Program(1L, "institution1@example.com", "Program 1", "Description 1",
+                "http://link1.com", "English", null, null,
+                dateWithEnrollment, null, Status.APPROVED,
+                "Location 1", null, null, ProgramType.HIGHER, null);
+        Program programWithoutDate1 = new Program(2L, "institution2@example.com", "Program Z", "Description 1",
+                "http://link2.com", "English", null, null,
+                null, null, Status.APPROVED, "Location 2", null,
+                null, ProgramType.HIGHER, null);
+        Program programWithoutDate2 = new Program(3L, "institution3@example.com", "Program A", "Description 2",
+                "http://link3.com", "English", null, null,
+                null, null, Status.APPROVED, "Location 3", null,
+                null, ProgramType.HIGHER, null);
+
+        // Simulando o comportamento do repositório
+        when(programRepository.findAll()).thenReturn(Arrays.asList(programWithDate, programWithoutDate1, programWithoutDate2));
+
+        // Chama o serviço para recuperar os programas ordenados
+        List<ProgramResponseDTO> sortedPrograms = programService.getProgramsSortedByEnrollmentDate();
+
+        // Verifica se a ordem está correta
+        assertEquals("Program 1", sortedPrograms.get(0).getTitle());  // O programa com data de inscrição deve vir primeiro
+        assertEquals("Program A", sortedPrograms.get(1).getTitle());  // O programa sem data de inscrição, mas com nome A, deve vir depois
+        assertEquals("Program Z", sortedPrograms.get(2).getTitle());  // O programa sem data de inscrição, mas com nome Z, deve vir por último
+    }
 //
 //    @Test
 //    public void testProgramsWithExpiredEnrollmentDate() {

@@ -262,40 +262,34 @@ public class ProgramServiceImpl implements IProgramService {
     public List<ProgramResponseDTO> getProgramsSortedByEnrollmentDate() {
         List<Program> programs = repository.findAll();
 
-        // Ordena primeiro pela data de inscrição e, se for null, pela ordem alfabética do nome
+        // Ordena os programas pela data de inscrição (null para os últimos) e depois pelo nome
         programs.sort((p1, p2) -> {
             if (p1.getEnrollmentInitialDate() == null && p2.getEnrollmentInitialDate() == null) {
-                // Ambos sem data, ordena por nome
-                return p1.getTitle().compareTo(p2.getTitle());
+                return p1.getTitle().compareTo(p2.getTitle()); // Ordena por nome se ambos não tiverem data
             } else if (p1.getEnrollmentInitialDate() == null) {
-                return 1; // p1 vai para o final
+                return 1; // Coloca o p1 (sem data) depois
             } else if (p2.getEnrollmentInitialDate() == null) {
-                return -1; // p2 vai para o final
+                return -1; // Coloca o p2 (sem data) depois
             }
-            // Caso haja data, ordena por data
-            return p2.getEnrollmentInitialDate().compareTo(p1.getEnrollmentInitialDate());
+
+            // Compara as datas de inscrição
+            int dateComparison = p1.getEnrollmentInitialDate().compareTo(p2.getEnrollmentInitialDate());
+            if (dateComparison != 0) {
+                return dateComparison;
+            }
+
+            // Se as datas forem iguais, ordena por nome
+            return p1.getTitle().compareTo(p2.getTitle());
         });
 
-        // Converte a lista de Program para ProgramResponseDTO
+        // Converte para DTOs e retorna
         return programs.stream()
-                .map(program -> new ProgramResponseDTO(
-                        program.getId(),
-                        program.getTitle(),
-                        program.getDescription(),
-                        program.getLink(),
-                        program.getLanguage(),
-                        program.getProgramInitialDate(),
-                        program.getProgramEndDate(),
-                        program.getEnrollmentInitialDate(),
-                        program.getEnrollmentEndDate(),
-                        program.getStatus(),
-                        program.getInstitutionEmail(),
-                        program.getLocation(),
-                        program.getTags(),
-                        program.getDataFile(),
-                        program.getProgramType(),
-                        program.getFeedback()
-                ))
+                .map(program -> new ProgramResponseDTO(program.getId(), program.getTitle(), program.getDescription(),
+                        program.getLink(), program.getLanguage(), program.getProgramInitialDate(),
+                        program.getProgramEndDate(), program.getEnrollmentInitialDate(),
+                        program.getEnrollmentEndDate(), program.getStatus(), program.getInstitutionEmail(),
+                        program.getLocation(), program.getTags(), program.getDataFile(),
+                        program.getProgramType(), program.getFeedback()))
                 .collect(Collectors.toList());
     }
 }
