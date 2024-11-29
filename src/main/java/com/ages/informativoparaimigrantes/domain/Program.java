@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
+@Getter // Lombok irá gerar os getters para todos os campos
 @Entity
 public class Program {
 
