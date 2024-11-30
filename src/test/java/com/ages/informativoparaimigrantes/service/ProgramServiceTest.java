@@ -286,41 +286,55 @@ public class ProgramServiceTest {
         assertEquals("Program A", sortedPrograms.get(1).getTitle());  // O programa sem data de inscrição, mas com nome A, deve vir depois
         assertEquals("Program Z", sortedPrograms.get(2).getTitle());  // O programa sem data de inscrição, mas com nome Z, deve vir por último
     }
-//
+
 //    @Test
 //    public void testProgramsWithExpiredEnrollmentDate() {
-//        // Criar programas com data de inscrição no passado
-//        Program expiredProgram = new Program("Expired Program", LocalDate.of(2023, 12, 1), "Description 1");
-//        Program activeProgram = new Program("Active Program", LocalDate.of(2024, 12, 1), "Description 2");
+//        // Criando programas com data de inscrição no passado e no futuro (usando Date)
+//        Date expiredEnrollmentDate = Date.from(LocalDate.of(2023, 12, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+//        Date activeEnrollmentDate = Date.from(LocalDate.of(2024, 12, 20).atStartOfDay(ZoneId.systemDefault()).toInstant());
+//        Date activeEndDate = Date.from(LocalDate.of(2024, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant()); // data de fim de inscrição do programa ativo
+//
+//        // O programa expirado deve ter uma enrollmentEndDate no passado
+//        Program expiredProgram = new Program(1L, "institution1@example.com", "Expired Program", "Description 1",
+//                "http://link1.com", "English", null, null,
+//                expiredEnrollmentDate, expiredEnrollmentDate, Status.APPROVED,
+//                "Location 1", null, null, ProgramType.HIGHER, null);
+//
+//        // O programa ativo deve ter uma enrollmentEndDate no futuro
+//        Program activeProgram = new Program(2L, "institution2@example.com", "Active Program", "Description 2",
+//                "http://link2.com", "English", null, null,
+//                activeEnrollmentDate, activeEndDate, Status.APPROVED,
+//                "Location 2", null, null, ProgramType.HIGHER, null);
 //
 //        // Adicionando-os à lista
 //        List<Program> programs = Arrays.asList(expiredProgram, activeProgram);
 //
-//        // Simulando o repositório para retornar programas
+//        // Data atual para o filtro (combinando com a hora do sistema)
+//        Date testCurrentDate = Date.from(LocalDate.of(2024, 11, 29).atStartOfDay(ZoneId.systemDefault()).toInstant()); // Data fixa para garantir consistência
+//
+//        // Simulando o repositório para retornar apenas programas com inscrições abertas (openSubscription = true)
 //        when(programRepository.findWithFilters(
 //                eq(null),  // status
 //                eq(null),  // institutionEmail
 //                eq(null),  // programType
 //                eq(null),  // language
 //                eq(null),  // location
-//                eq(true)   // openSubscription
-//        )).thenReturn(programs.stream()
-//                .filter(p -> p.getEnrollmentDate() != null && !p.getEnrollmentDate().isBefore(LocalDate.now()))  // Filtrando por data válida
-//                .collect(Collectors.toList()));
+//                eq(true)   // openSubscription - estamos buscando programas com inscrições abertas
+//        )).thenReturn(programs);  // O repositório irá usar a lógica já implementada na consulta
 //
-//        // Act: Chama o serviço para obter programas
+//        // Act: Chama o serviço para obter os programas filtrados
 //        List<ProgramResponseDTO> filteredPrograms = programService.getFiltered(
 //                Status.APPROVED,  // Status
 //                null,             // institutionEmail
 //                null,             // programType
 //                null,             // language
 //                null,             // location
-//                null,             // openSubscription
+//                true,             // openSubscription - queremos programas com inscrição aberta
 //                null              // tags
 //        );
 //
 //        // Assert: Verifica se o programa expirado foi excluído
-//        assertEquals(1, filteredPrograms.size());
-//        assertEquals("Active Program", filteredPrograms.get(0).getTitle());
+//        assertEquals(1, filteredPrograms.size());  // Deve haver apenas 1 programa com inscrição aberta
+//        assertEquals("Active Program", filteredPrograms.get(0).getTitle());  // O programa ativo deve ser retornado
 //    }
 }
