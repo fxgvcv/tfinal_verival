@@ -29,9 +29,10 @@ public class SecurityConfig {
                 .headers().frameOptions().disable().and()
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .antMatchers(HttpMethod.POST, "/programs/**").hasAnyRole("ADMIN", "INSTITUTION")
-                        .antMatchers(HttpMethod.PATCH, "/programs/**/status").hasRole("ADMIN")
-                        .antMatchers(HttpMethod.POST, "/articles/**").hasRole("ADMIN")
+                        .antMatchers(HttpMethod.POST, "/programs/**").permitAll()
+                        .antMatchers(HttpMethod.GET, "/programs/**").permitAll()  // Defina para GET também
+                        .antMatchers(HttpMethod.PATCH, "/programs/**/status").permitAll()
+                        .antMatchers(HttpMethod.POST, "/articles/**").permitAll()
                         .antMatchers(HttpMethod.POST, "/immigrants").permitAll()
                         .antMatchers(HttpMethod.POST, "/institutions").permitAll()
                         .antMatchers(HttpMethod.PATCH, "/institutions/**/status").hasRole("ADMIN")

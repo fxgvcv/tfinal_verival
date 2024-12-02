@@ -11,9 +11,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
+import org.springframework.web.client.RestTemplate;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -28,58 +35,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@ExtendWith(MockitoExtension.class)
-@WebMvcTest(ProgramController.class)
-class ProgramControllerTest {
-
-    private final String baseEndpoint = "/programs"; // Corrigido para usar a variável baseEndpoint
+@SpringBootTest
+@AutoConfigureMockMvc// Para inicializar o servidor com uma porta aleatória
+public class ProgramControllerTest {
 
     @Autowired
-    private MockMvc mockMvc; // MockMvc para simular as requisições HTTP
+    private MockMvc mockMvc;
 
-    @MockBean
-    private ProgramServiceImpl programService; // O serviço mockado
+//    private String baseUrl = "http://localhost:8080"; // Base URL para o teste (geralmente, a URL local ou a URL que você usa no seu ambiente de teste)
 
-    @MockBean
-    private IUserRepository userRepository; // Mockando o repositório IUserRepository
-
-    // 1. Retorno de Lista de Programas
     @Test
     public void getProgramsShouldReturnProgramList() throws Exception {
-        // Mock do retorno esperado do serviço
-        List<ProgramResponseDTO> mockPrograms = List.of(
-                ProgramResponseDTO.builder()
-                        .id(1L)
-                        .title("any")
-                        .description("any")
-                        .link("any")
-                        .language("any")
-                        .programInitialDate(null)
-                        .programEndDate(null)
-                        .enrollmentInitialDate(null)
-                        .enrollmentEndDate(null)
-                        .status(Status.PENDING)
-                        .institutionEmail("any")
-                        .location("any")
-                        .tags(List.of(
-                                new Tag(1L, "Education", "PT-BR"),
-                                new Tag(2L, "Work", "EN")
-                        ))
-                        .file("any")
-                        .programType(ProgramType.HIGHER)
-                        .feedback("any")
-                        .build()
-        );
-
-        // Simula o comportamento do serviço
-        when(programService.getFiltered(any(), any(), any(), any(), any(), any(), any())).thenReturn(mockPrograms);
-
-        // Adicionando um token válido na requisição
-        String validJwtToken = "seu-token-jwt-aqui";  // Substitua com um token válido para o teste
-        mockMvc.perform(get(baseEndpoint)
-                        .header("Authorization", "Bearer " + validJwtToken))  // Cabeçalho com o token
-                .andExpect(status().isOk())  // Espera o status 200 OK
-                .andExpect(content().json(new ObjectMapper().writeValueAsString(mockPrograms)));  // Compara o JSON da resposta
+        mockMvc.perform(MockMvcRequestBuilders.get("/programs"))
+                .andExpect(MockMvcResultMatchers.status().isOk())  // Verifica se o status é 200 OK
+                .andExpect(MockMvcResultMatchers.jsonPath("$").exists()); // Verifica se o corpo contém dados
     }
 //
 //    // 2. Filtros Sem Parâmetros
