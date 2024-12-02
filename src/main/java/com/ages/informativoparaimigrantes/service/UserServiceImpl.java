@@ -2,7 +2,7 @@ package com.ages.informativoparaimigrantes.service;
 
 import com.ages.informativoparaimigrantes.domain.UserData;
 import com.ages.informativoparaimigrantes.repository.IUserRepository;
-import com.ages.informativoparaimigrantes.security.HashUtils;
+import com.ages.informativoparaimigrantes.HashUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package com.ages.informativoparaimigrantes.security;
+package com.ages.informativoparaimigrantes;
 
 import com.ages.informativoparaimigrantes.repository.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,11 +16,12 @@ import java.io.IOException;
 
 @Component
 public class SecurityFilter extends OncePerRequestFilter {
-    @Autowired
+
     TokenService tokenService;
 
     @Autowired
     IUserRepository userRepository;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         if (this.recoverToken(request) != null){
@@ -36,8 +37,8 @@ public class SecurityFilter extends OncePerRequestFilter {
                 response.getWriter().close();
                 return;
             }
-//            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-//            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+            UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
         }
         filterChain.doFilter(request, response);
     }

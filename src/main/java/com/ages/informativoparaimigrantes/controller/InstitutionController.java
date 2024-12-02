@@ -7,7 +7,7 @@ import com.ages.informativoparaimigrantes.dto.InstitutionUserDTO;
 import com.ages.informativoparaimigrantes.dto.StatusUpdateRequestDTO;
 import com.ages.informativoparaimigrantes.enums.Status;
 import com.ages.informativoparaimigrantes.exceptions.EncryptionException;
-import com.ages.informativoparaimigrantes.security.HashUtils;
+import com.ages.informativoparaimigrantes.HashUtils;
 import com.ages.informativoparaimigrantes.service.InstitutionServiceImpl;
 import com.ages.informativoparaimigrantes.service.UserServiceImpl;
 import com.ages.informativoparaimigrantes.util.Utils;

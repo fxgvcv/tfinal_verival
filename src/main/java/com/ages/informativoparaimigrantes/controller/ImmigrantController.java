@@ -5,7 +5,7 @@ import com.ages.informativoparaimigrantes.dto.ImmigrantRegistrationDTO;
 import com.ages.informativoparaimigrantes.domain.UserData;
 import com.ages.informativoparaimigrantes.dto.ImmigrantUserDTO;
 import com.ages.informativoparaimigrantes.exceptions.EncryptionException;
-import com.ages.informativoparaimigrantes.security.HashUtils;
+import com.ages.informativoparaimigrantes.HashUtils;
 import com.ages.informativoparaimigrantes.service.ImmigrantServiceImpl;
 import com.ages.informativoparaimigrantes.service.UserServiceImpl;
 import com.ages.informativoparaimigrantes.util.Utils;

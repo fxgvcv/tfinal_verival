@@ -1,4 +1,4 @@
-package com.ages.informativoparaimigrantes.security;
+package com.ages.informativoparaimigrantes;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -8,7 +8,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -19,6 +18,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
     @Autowired
     SecurityFilter securityFilter;
+
+    @Autowired
+    TokenService tokenService;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
         return httpSecurity
@@ -36,7 +39,7 @@ public class SecurityConfig {
                         .antMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .antMatchers("/swagger-ui/**").permitAll()
                         .antMatchers("/swagger-resources/**").permitAll()
-                        //.anyRequest().authenticated()
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -50,5 +53,4 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder(){
         return new HashUtils();
     }
-
 }

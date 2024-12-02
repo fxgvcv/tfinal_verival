@@ -1,4 +1,4 @@
-package com.ages.informativoparaimigrantes.security;
+package com.ages.informativoparaimigrantes;
 
 import com.ages.informativoparaimigrantes.exceptions.EncryptionException;
 import lombok.Setter;
@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
-import javax.naming.AuthenticationException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 

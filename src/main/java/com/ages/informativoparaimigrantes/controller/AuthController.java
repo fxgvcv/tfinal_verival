@@ -3,7 +3,7 @@ package com.ages.informativoparaimigrantes.controller;
 import com.ages.informativoparaimigrantes.domain.UserData;
 import com.ages.informativoparaimigrantes.dto.AuthenticationRequestDTO;
 import com.ages.informativoparaimigrantes.dto.AuthenticationResponseDTO;
-import com.ages.informativoparaimigrantes.security.TokenService;
+import com.ages.informativoparaimigrantes.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("auth")

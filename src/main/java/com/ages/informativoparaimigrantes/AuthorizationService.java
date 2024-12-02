@@ -1,4 +1,4 @@
-package com.ages.informativoparaimigrantes.security;
+package com.ages.informativoparaimigrantes;
 
 import com.ages.informativoparaimigrantes.repository.IUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
