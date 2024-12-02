@@ -51,3 +51,10 @@ tasks.named('bootRun') {
 	jvmArgs = ['-Dspring.profiles.active=dev'] // Perfil de desenvolvimento (opcional)
 }
 
+test {
+	testLogging {
+		events "started", "passed", "failed", "skipped"  // Exibe todos os eventos dos testes
+		showStandardStreams = true  // Exibe as saídas de `System.out` e `System.err` no console
+	}
+}
+

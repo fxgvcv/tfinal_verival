@@ -1,5 +1,6 @@
 package com.ages.informativoparaimigrantes.controller;
 
+import com.ages.informativoparaimigrantes.domain.Program;
 import com.ages.informativoparaimigrantes.domain.Tag;
 import com.ages.informativoparaimigrantes.dto.ProgramResponseDTO;
 import com.ages.informativoparaimigrantes.enums.ProgramType;
@@ -7,8 +8,10 @@ import com.ages.informativoparaimigrantes.enums.Status;
 import com.ages.informativoparaimigrantes.repository.IUserRepository;
 import com.ages.informativoparaimigrantes.service.ProgramServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,6 +21,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.RestTemplate;
@@ -30,8 +34,9 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -42,61 +47,261 @@ public class ProgramControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-//    private String baseUrl = "http://localhost:8080"; // Base URL para o teste (geralmente, a URL local ou a URL que você usa no seu ambiente de teste)
+    @MockBean
+    private ProgramServiceImpl programService;
 
-    @Test
-    public void getProgramsShouldReturnProgramList() throws Exception {
-        mockMvc.perform(MockMvcRequestBuilders.get("/programs"))
-                .andExpect(MockMvcResultMatchers.status().isOk())  // Verifica se o status é 200 OK
-                .andExpect(MockMvcResultMatchers.jsonPath("$").exists()); // Verifica se o corpo contém dados
-    }
-//
-//    // 2. Filtros Sem Parâmetros
+    @Autowired
+    private ObjectMapper objectMapper;  // Para conversão de objetos para JSON
+
 //    @Test
-//    void testGetFiltered_withNoFilters() throws Exception {
+//    public void getProgramsShouldReturnProgramList() throws Exception {
+//        // Arrange: Criar programas fictícios para simulação
+//        Program program1 = new Program(1L, "institution1@example.com", "Program 1", "Description 1", "http://link1.com", "English",
+//                null, null, null, null, Status.APPROVED, "Location 1", null, null, ProgramType.HIGHER, null);
+//        Program program2 = new Program(2L, "institution2@example.com", "Program 2", "Description 2", "http://link2.com", "Spanish",
+//                null, null, null, null, Status.APPROVED, "Location 2", null, null, ProgramType.HIGHER, null);
+//
+//        // Criando uma lista de programas simulada (mocked response)
 //        List<ProgramResponseDTO> mockPrograms = List.of(
 //                ProgramResponseDTO.builder()
 //                        .id(1L)
 //                        .title("Program 1")
-//                        .description("Description")
+//                        .description("Description of Program 1")
+//                        .link("http://program1.com")
+//                        .language("EN")
+//                        .programInitialDate(null)
+//                        .programEndDate(null)
+//                        .enrollmentInitialDate(null)
+//                        .enrollmentEndDate(null)
 //                        .status(Status.PENDING)
-//                        .location("São Paulo")
-//                        .tags(Collections.emptyList())
+//                        .institutionEmail("institution1@domain.com")
+//                        .location("Location 1")
+//                        .tags(List.of(
+//                                new Tag(1L, "Education", "EN"),
+//                                new Tag(2L, "Work", "EN")
+//                        ))
 //                        .file("file1.pdf")
 //                        .programType(ProgramType.HIGHER)
-//                        .feedback("any")
+//                        .feedback("Feedback 1")
+//                        .build(),
+//                ProgramResponseDTO.builder()
+//                        .id(2L)
+//                        .title("Program 2")
+//                        .description("Description of Program 2")
+//                        .link("http://program2.com")
+//                        .language("PT-BR")
+//                        .programInitialDate(null)
+//                        .programEndDate(null)
+//                        .enrollmentInitialDate(null)
+//                        .enrollmentEndDate(null)
+//                        .status(Status.APPROVED)
+//                        .institutionEmail("institution2@domain.com")
+//                        .location("Location 2")
+//                        .tags(List.of(
+//                                new Tag(3L, "Healthcare", "PT-BR"),
+//                                new Tag(4L, "Technology", "PT-BR")
+//                        ))
+//                        .file("file2.pdf")
+//                        .programType(ProgramType.HIGHER)
+//                        .feedback("Feedback 2")
 //                        .build()
 //        );
 //
-//        when(service.getFiltered(null, null, null, null, null, null, null)).thenReturn(mockPrograms);
+//        // Verificando se o método getFiltered foi chamado com qualquer parâmetro
+//        Mockito.when(programService.getFiltered(
+//                Mockito.eq(Status.APPROVED),  // Status esperado
+//                Mockito.anyString(),          // Institution email
+//                Mockito.eq(ProgramType.HIGHER), // Program type esperado
+//                Mockito.anyString(),          // Language
+//                Mockito.anyString(),          // Location
+//                Mockito.any(),                // Open subscription
+//                Mockito.anyString()           // Tags
+//        )).thenReturn(mockPrograms);
 //
-//        mockMvc.perform(get(baseEndpoint))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(new ObjectMapper().writeValueAsString(mockPrograms)));
+//        // Imprime a lista de programas mockados para confirmar a correspondência com a resposta
+//        System.out.println("Mock Programs retornados pelo getFiltered: " + objectMapper.writeValueAsString(mockPrograms));
+//
+//        // Convertendo a lista de programas para JSON para comparação
+//        String jsonResponse = objectMapper.writeValueAsString(mockPrograms);
+//
+//        mockMvc.perform(MockMvcRequestBuilders.get("/programs"))
+//                .andExpect(MockMvcResultMatchers.status().isOk())  // Verifica se o status é 200 OK
+//                .andExpect(MockMvcResultMatchers.jsonPath("$", Matchers.hasSize(Matchers.greaterThan(0))))  // Verifica se a lista retornada tem elementos
+//                .andReturn();// Obtém o resultado da requisição
 //    }
-//
-//    // 3. Filtros Aplicados por Status e Localização
+
+
 //    @Test
-//    void testGetFiltered_withStatusAndLocationFilters() throws Exception {
-//        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
-//                .id(1L)
-//                .title("Program 1")
-//                .description("Description")
-//                .status(Status.APPROVED)
-//                .location("São Paulo")
-//                .tags(Collections.emptyList())
-//                .file("any")
-//                .programType(ProgramType.HIGHER)
-//                .feedback("any")
-//                .build();
+//    public void getProgramsShouldReturnProgramList() throws Exception {
+//        // Criando uma lista de programas simulada (mocked response)
+//        List<ProgramResponseDTO> mockPrograms = List.of(
+//                ProgramResponseDTO.builder()
+//                        .id(1L)
+//                        .title("Program 1")
+//                        .description("Description of Program 1")
+//                        .link("http://program1.com")
+//                        .language("EN")
+//                        .programInitialDate(null)
+//                        .programEndDate(null)
+//                        .enrollmentInitialDate(null)
+//                        .enrollmentEndDate(null)
+//                        .status(Status.PENDING)
+//                        .institutionEmail("institution1@domain.com")
+//                        .location("Location 1")
+//                        .tags(List.of(
+//                                new Tag(1L, "Education", "EN"),
+//                                new Tag(2L, "Work", "EN")
+//                        ))
+//                        .file("file1.pdf")
+//                        .programType(ProgramType.HIGHER)
+//                        .feedback("Feedback 1")
+//                        .build(),
+//                ProgramResponseDTO.builder()
+//                        .id(2L)
+//                        .title("Program 2")
+//                        .description("Description of Program 2")
+//                        .link("http://program2.com")
+//                        .language("PT-BR")
+//                        .programInitialDate(null)
+//                        .programEndDate(null)
+//                        .enrollmentInitialDate(null)
+//                        .enrollmentEndDate(null)
+//                        .status(Status.APPROVED)
+//                        .institutionEmail("institution2@domain.com")
+//                        .location("Location 2")
+//                        .tags(List.of(
+//                                new Tag(3L, "Healthcare", "PT-BR"),
+//                                new Tag(4L, "Technology", "PT-BR")
+//                        ))
+//                        .file("file2.pdf")
+//                        .programType(ProgramType.HIGHER)
+//                        .feedback("Feedback 2")
+//                        .build()
+//        );
 //
-//        when(service.getFiltered(Status.APPROVED, null, null, null, "São Paulo", null, null)).thenReturn(List.of(mockProgram));
+//        // Convertendo a lista de programas para JSON para comparação
+//        String jsonResponse = objectMapper.writeValueAsString(mockPrograms);
 //
-//        mockMvc.perform(get(baseEndpoint + "?status=APPROVED&location=São Paulo"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
+//        // Fazendo a requisição com MockMvc e validando a resposta
+//        mockMvc.perform(MockMvcRequestBuilders.get("/programs"))
+//                .andExpect(MockMvcResultMatchers.status().isOk())  // Verifica se o status é 200 OK
+//                .andExpect(MockMvcResultMatchers.content().json(jsonResponse));  // Verifica se o corpo da resposta é igual à lista mockada
 //    }
-//
+    @Test
+    public void getProgramsShouldReturnProgramList() throws Exception {
+        // Faz a requisição GET e obtém a resposta
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.get("/programs"))
+                .andExpect(MockMvcResultMatchers.status().isOk())  // Verifica se o status é 200 OK
+                .andExpect(MockMvcResultMatchers.jsonPath("$").exists()) // Verifica se o corpo contém dados
+                .andReturn();  // Obtém o resultado da requisição
+
+        // Imprime o conteúdo da resposta no console
+        System.out.println("Resposta da requisição: " + result.getResponse().getContentAsString());
+    }
+
+    @Test
+    void testGetFiltered_withNoFilters() throws Exception {
+        List<ProgramResponseDTO> mockPrograms = List.of(
+                ProgramResponseDTO.builder()
+                        .id(1L)
+                        .title("Program 1")
+                        .description("Description")
+                        .status(Status.PENDING)
+                        .location("São Paulo")
+                        .tags(Collections.emptyList())
+                        .file("file1.pdf")
+                        .programType(ProgramType.HIGHER)
+                        .feedback("any")
+                        .build()
+        );
+
+        when(programService.getFiltered(null, null, null, null, null, null, null)).thenReturn(mockPrograms);
+
+        // Realiza a requisição e captura o resultado
+        MvcResult result = mockMvc.perform(get("/programs"))
+                .andExpect(status().isOk())  // Verifica se o status é 200 OK
+                .andReturn();  // Captura o resultado da requisição
+
+        // Obtém o corpo da resposta como uma string
+        String responseContent = result.getResponse().getContentAsString();
+
+        // Imprime o conteúdo da resposta no console
+        System.out.println("Esse é o retorno da requisição: " + responseContent);
+
+        // Verifica se o conteúdo da resposta é o esperado
+        mockMvc.perform(get("/programs"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(mockPrograms)));
+    }
+
+    // 3. Filtros Aplicados por Status e Localização
+    @Test
+    void testGetFiltered_withStatusAndLocationFilters() throws Exception {
+        // Cria uma lista de programas simulados
+        List<ProgramResponseDTO> mockPrograms = List.of(
+                ProgramResponseDTO.builder()
+                        .id(1L)
+                        .title("Program 1")
+                        .description("A higher education program focused on technology and innovation.")
+                        .status(Status.APPROVED)
+                        .location("São Paulo")
+                        .tags(Collections.emptyList())  // Não há tags definidas
+                        .file("file1.pdf")
+                        .programType(ProgramType.HIGHER)
+                        .feedback("Feedback from participants: Excellent learning experience!")
+                        .build(),
+
+                ProgramResponseDTO.builder()
+                        .id(2L)
+                        .title("Program 2")
+                        .description("A short course on digital marketing strategies.")
+                        .status(Status.APPROVED)
+                        .location("Rio de Janeiro")
+                        .tags(Collections.emptyList())  // Não há tags definidas
+                        .file("file2.pdf")
+                        .programType(ProgramType.HIGHER)
+                        .feedback("Participants found the course very insightful and practical.")
+                        .build(),
+
+                ProgramResponseDTO.builder()
+                        .id(3L)
+                        .title("Program 3")
+                        .description("An intensive bootcamp for full-stack web development.")
+                        .status(Status.APPROVED)
+                        .location("Belo Horizonte")
+                        .tags(Collections.emptyList())  // Não há tags definidas
+                        .file("file3.pdf")
+                        .programType(ProgramType.HIGHER)
+                        .feedback("Great course! It equipped me with the skills to enter the tech industry.")
+                        .build()
+        );
+
+        // Mock do comportamento do serviço
+        when(programService.getFiltered(Status.APPROVED, null, null, null, "São Paulo", null, null))
+                .thenReturn(mockPrograms);
+
+        // Realiza a requisição GET com os parâmetros na URL
+        MvcResult result = mockMvc.perform(get("/programs")
+                        .param("status", "APPROVED")
+                        .param("location", "São Paulo"))
+                .andExpect(status().isOk())  // Verifica se o status é 200 OK
+                .andReturn();  // Captura o resultado da requisição
+
+        // Obtém o corpo da resposta como uma string
+        String responseContent = result.getResponse().getContentAsString();
+
+        // Imprime o conteúdo da resposta no console
+        System.out.println("Esse é o retorno da requisição: " + responseContent);
+
+        // Verifica se o conteúdo da resposta é o esperado
+        mockMvc.perform(get("/programs")
+                        .param("status", "APPROVED")
+                        .param("location", "São Paulo"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(mockPrograms)));
+    }
+
+
 //    // 4. Múltiplos Filtros Aplicados
 //    @Test
 //    void testGetFiltered_withMultipleFilters() throws Exception {
