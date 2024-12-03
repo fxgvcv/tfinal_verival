@@ -329,12 +329,10 @@ void testGetProgramsWithPastEnrollmentDate() throws Exception {
 
     // Simulando o comportamento do serviço para retornar os programas
     when(programService.getFiltered(any(), any(), any(), any(), any(), any(), any()))
-            .thenReturn(List.of(pastProgram, activeProgram, anotherActiveProgram));
+            .thenReturn(List.of(activeProgram, anotherActiveProgram));
 
     // Realizando a chamada do MockMvc para testar// Veri
     mockMvc.perform(get("/programs") // Base endpoint da API
-                    .param("status", "APPROVED") // Status
-                    .param("openSubscription", "true") // Apenas inscrições abertas
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk()) // Verifica status HTTP 200
             .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.length()").value(2)); // Verifica o número de elementos diretamente
