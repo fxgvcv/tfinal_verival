@@ -1,5 +1,5 @@
 package com.ages.informativoparaimigrantes.controller;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import com.ages.informativoparaimigrantes.domain.Program;
@@ -38,7 +38,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -296,7 +295,8 @@ void testGetProgramsWithPastEnrollmentDate() throws Exception {
             .title("Past Program")
             .description("Expired Program")
             .enrollmentInitialDate(pastDate)
-            .status(Status.PENDING)
+            .enrollmentEndDate(pastDate)  // Data de término no passado
+            .status(Status.APPROVED)
             .location("Location A")
             .programType(ProgramType.HIGHER)
             .file("any")
@@ -308,7 +308,8 @@ void testGetProgramsWithPastEnrollmentDate() throws Exception {
             .title("Active Program")
             .description("Active Program")
             .enrollmentInitialDate(futureDate)
-            .status(Status.PENDING)
+            .enrollmentEndDate(futureDate)  // Data de término no futuro
+            .status(Status.APPROVED)
             .location("Location B")
             .programType(ProgramType.HIGHER)
             .file("any")
@@ -320,21 +321,34 @@ void testGetProgramsWithPastEnrollmentDate() throws Exception {
             .title("Another Active Program")
             .description("Another Active Program")
             .enrollmentInitialDate(anotherFutureDate)
-            .status(Status.PENDING)
+            .enrollmentEndDate(anotherFutureDate)  // Data de término no futuro
+            .status(Status.APPROVED)
             .location("Location C")
             .programType(ProgramType.HIGHER)
             .file("any")
             .feedback("any")
             .build();
 
-    // Simulando o comportamento do serviço para retornar os programas
-    when(programService.getFiltered(any(), any(), any(), any(), any(), any(), any()))
+    // Simulando o comportamento do serviço para retornar os programas filtrados
+    when(programService.getFiltered(any(), any(), any(), any(), any(), eq(true), any()))
             .thenReturn(List.of(activeProgram, anotherActiveProgram));
 
-    // Realizando a chamada do MockMvc para testar// Veri
-    mockMvc.perform(get("/programs") // Base endpoint da API
+    // Realizando a chamada do MockMvc para testar a API
+    MvcResult result = mockMvc.perform(get("/programs") // Base endpoint da API
+                    .param("status", Status.APPROVED.name())
+                    .param("language", "English")
+                    .param("openSubscription", "true")
                     .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk()) // Verifica status HTTP 200
-            .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.length()").value(2)); // Verifica o número de elementos diretamente
-    }
+            .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.length()").value(2))  // Espera dois programas ativos
+            .andExpect(MockMvcResultMatchers.jsonPath("$[0].id", equalTo(2)))  // Verifica o ID do primeiro programa como Long
+            .andExpect(MockMvcResultMatchers.jsonPath("$[1].id", equalTo(3)))
+            .andReturn();
+
+    // Imprime o conteúdo da resposta
+    System.out.println("Response: " + result.getResponse().getContentAsString());
+
+    // Certificando que o programa passado com data expirada não foi retornado
+    verify(programService).getFiltered(any(), any(), any(), eq("English"), any(), eq(true), any());
+}
 }

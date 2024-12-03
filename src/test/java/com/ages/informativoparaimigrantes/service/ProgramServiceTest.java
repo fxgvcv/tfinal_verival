@@ -96,7 +96,7 @@ public class ProgramServiceTest {
                 null,             // language
                 null,             // location
                 null,             // openSubscription
-                null              // tags
+                null              //  fequaltags
         );
 
         // Assert: Verifica se o filtro está funcionando corretamente
