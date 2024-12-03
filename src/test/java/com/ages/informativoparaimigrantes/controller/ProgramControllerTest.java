@@ -1,7 +1,10 @@
 package com.ages.informativoparaimigrantes.controller;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ages.informativoparaimigrantes.domain.Program;
 import com.ages.informativoparaimigrantes.domain.Tag;
 import com.ages.informativoparaimigrantes.dto.ProgramResponseDTO;
@@ -37,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -107,6 +111,97 @@ public class ProgramControllerTest {
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(mockPrograms)));
     }
 
+//  4 - Com vários filtros
+    @Test
+    void testGetFiltered_withMultipleFilters() throws Exception {
+        // Cria uma lista de programas simulados
+        List<ProgramResponseDTO> mockPrograms = List.of(
+                ProgramResponseDTO.builder()
+                        .id(1L)
+                        .title("Program 1")
+                        .description("Program focused on AI.")
+                        .programInitialDate(null)
+                        .programEndDate(null)
+                        .status(Status.APPROVED)
+                        .location("São Paulo")
+                        .tags(Collections.emptyList()) // Sem tags
+                        .file("file1.pdf")
+                        .programType(ProgramType.HIGHER)
+                        .feedback("Excellent program!")
+                        .build(),
+
+                ProgramResponseDTO.builder()
+                        .id(2L)
+                        .title("Program 2")
+                        .description("Short course in web development.")
+                        .programInitialDate(null)
+                        .programEndDate(null)
+                        .status(Status.REJECTED)
+                        .location("Rio de Janeiro")
+                        .tags(Collections.emptyList())
+                        .file("file2.pdf")
+                        .programType(ProgramType.HIGHER)
+                        .feedback("Well-structured course.")
+                        .build(),
+
+                ProgramResponseDTO.builder()
+                        .id(3L)
+                        .title("Program 3")
+                        .description("Full-stack bootcamp.")
+                        .programInitialDate(null)
+                        .programEndDate(null)
+                        .status(Status.APPROVED)
+                        .location("Belo Horizonte")
+                        .tags(Collections.emptyList())
+                        .file("file3.pdf")
+                        .programType(ProgramType.HIGHER)
+                        .feedback("Great experience!")
+                        .build()
+        );
+
+        // Mock do comportamento do serviço
+        when(programService.getFiltered(Status.APPROVED, null, ProgramType.HIGHER, null, "São Paulo", true, null))
+                .thenReturn(List.of(mockPrograms.get(0))); // Apenas o primeiro programa corresponde
+
+        // Realiza a requisição com vários parâmetros
+        MvcResult result = mockMvc.perform(get("/programs")
+                        .param("status", "APPROVED")
+                        .param("type", "HIGHER")
+                        .param("location", "São Paulo")
+                        .param("openSubscription", "true"))
+                .andExpect(status().isOk())  // Espera-se um status 200 OK
+                .andReturn();                // Captura o resultado da requisição
+
+        // Imprime o status HTTP da resposta
+        System.out.println("HTTP Status: " + result.getResponse().getStatus());
+
+        // Obtém o corpo da resposta como uma string
+        String rawResponseContent = result.getResponse().getContentAsString();
+        System.out.println("Conteúdo da Resposta (Raw): " + rawResponseContent);
+
+        // Converte o conteúdo da resposta para um objeto JSON para inspeção detalhada
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<ProgramResponseDTO> responsePrograms = objectMapper.readValue(
+                rawResponseContent,
+                new TypeReference<List<ProgramResponseDTO>>() {}
+        );
+
+        // Imprime cada programa retornado
+        System.out.println("Programas Retornados:");
+        for (ProgramResponseDTO program : responsePrograms) {
+            System.out.println(program);
+        }
+
+        // Verifica o resultado final com os parâmetros
+        mockMvc.perform(get("/programs")
+                        .param("status", "APPROVED")
+                        .param("type", "HIGHER")
+                        .param("location", "São Paulo")
+                        .param("openSubscription", "true"))
+                .andExpect(status().isOk())  // Verifica se o status é 200
+                .andExpect(content().json(objectMapper.writeValueAsString(List.of(mockPrograms.get(0))))); // Verifica o conteúdo
+    }
+
     // 3. Filtros Aplicados por Status e Localização
     @Test
     void testGetFiltered_withStatusAndLocationFilters() throws Exception {
@@ -164,7 +259,7 @@ public class ProgramControllerTest {
         String responseContent = result.getResponse().getContentAsString();
 
         // Imprime o conteúdo da resposta no console
-        System.out.println("Esse é o retorno da requisição: " + responseContent);
+        System.out.println("Esse é o retorno da requisição por status e localizacao: " + responseContent);
 
         // Verifica se o conteúdo da resposta é o esperado
         mockMvc.perform(get("/programs")
@@ -174,40 +269,7 @@ public class ProgramControllerTest {
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(mockPrograms)));
     }
 
-//
-////  4. Múltiplos Filtros Aplicados
-//    @Test
-//    void testGetFiltered_withMultipleFilters() throws Exception {
-//
-//        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
-//                .id(1L)
-//                .title("Program 1")
-//                .description("Description")
-//                .programInitialDate(null)
-//                .programEndDate(null)
-//                .status(Status.APPROVED)
-//                .location("São Paulo")
-//                .tags(Collections.emptyList()) // Se houver tags, ajuste aqui
-//                .file("any")
-//                .programType(ProgramType.HIGHER)
-//                .feedback("any")
-//                .build();
-//
-//        // Mock do comportamento do serviço
-//        when(programService.getFiltered(Status.APPROVED, null, ProgramType.HIGHER, null, "Porto Alegre", true, null))
-//                .thenReturn(List.of(mockProgram));
-//
-//        // Realiza a requisição com todos os parâmetros corretamente passados
-//        mockMvc.perform(get("/programs")  // Ajuste a URL para o caminho correto da sua API
-//                        .param("status", "APPROVED")  // Passando 'APPROVED' para o status
-//                        .param("type", "HIGHER")      // Passando 'HIGHER' para o type (enum)
-//                        .param("institutionEmail", "email.com")      // Passando 'HIGHER' para o type (enum)
-//                        .param("language", "PT-BR")   // Passando 'PT-BR' para o language
-//                        .param("location", "São Paulo") // Passando 'São Paulo' para a location// Passando data de fim
-//                        .param("openSubscription", "true"))  // Se esse parâmetro for necessário, forneça um valor (como 'true' ou 'false')
-//                .andExpect(status().isOk())  // Espera-se um status 200 OK
-//                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram)))); // Espera-se o retorno do mockProgram
-//    }
+// 4 - Teste com vários filtros
 
 
     // 5. Resposta Vazia para Filtros Sem Correspondência
@@ -252,103 +314,75 @@ public class ProgramControllerTest {
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));  // Espera-se que o conteúdo da resposta seja igual ao mockProgram
     }
 
+        // 10. Exclusão de Programas com Inscrição Passada
+    @Test
+    void testGetProgramsWithPastEnrollmentDate() throws Exception {
+        // Definir datas
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date pastDate = dateFormat.parse("2023-01-01"); // Data no passado
+        Date futureDate = dateFormat.parse("2025-01-01"); // Data futura (programa ativo)
+        Date anotherFutureDate = dateFormat.parse("2026-01-01"); // Outra data futura
 
-//    // 9. Ordenação por Data de Inscrição
-//    @Test
-//    void testGetFiltered_withSortByEnrollmentDate() throws Exception {
-//        // Criando o programa simulado com uma data de inscrição específica
-//        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
-//                .id(1L)
-//                .title("Program 1")
-//                .description("Description")
-//                .enrollmentInitialDate(new SimpleDateFormat("yyyy-MM-dd").parse("2024-01-01"))
-//                .status(Status.PENDING)
-//                .location("São Paulo")
-//                .tags(Collections.emptyList())
-//                .file("any")
-//                .programType(ProgramType.HIGHER)
-//                .feedback("any")
-//                .build();
-//
-//        // Mock do serviço retornando o programa simulado
-//        when(programService.getFiltered(any(), any(), any(), any(), any(), any(), any()))
-//                .thenReturn(List.of(mockProgram));  // Retorna a lista com o mockProgram
-//
-//        // Realizando a requisição GET com o parâmetro "sortBy=enrollmentInitialDate"
-//        mockMvc.perform(get("/programs")  // Certifique-se de que o "baseEndpoint" esteja correto
-//                .andExpect(status().isOk())  // Espera-se um status 200 OK
-//                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));  // Espera-se que o conteúdo seja o programa simulado
-//    }
-//
-    // 10. Exclusão de Programas com Inscrição Passada
-@Test
-void testGetProgramsWithPastEnrollmentDate() throws Exception {
-    // Definir datas
-    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-    Date pastDate = dateFormat.parse("2023-01-01"); // Data no passado
-    Date futureDate = dateFormat.parse("2025-01-01"); // Data futura (programa ativo)
-    Date anotherFutureDate = dateFormat.parse("2026-01-01"); // Outra data futura
+        // Criando programas mockados
+        ProgramResponseDTO pastProgram = ProgramResponseDTO.builder()
+                .id(1L)
+                .title("Past Program")
+                .description("Expired Program")
+                .enrollmentInitialDate(pastDate)
+                .enrollmentEndDate(pastDate)  // Data de término no passado
+                .status(Status.APPROVED)
+                .location("Location A")
+                .programType(ProgramType.HIGHER)
+                .file("any")
+                .feedback("any")
+                .build();
 
-    // Criando programas mockados
-    ProgramResponseDTO pastProgram = ProgramResponseDTO.builder()
-            .id(1L)
-            .title("Past Program")
-            .description("Expired Program")
-            .enrollmentInitialDate(pastDate)
-            .enrollmentEndDate(pastDate)  // Data de término no passado
-            .status(Status.APPROVED)
-            .location("Location A")
-            .programType(ProgramType.HIGHER)
-            .file("any")
-            .feedback("any")
-            .build();
+        ProgramResponseDTO activeProgram = ProgramResponseDTO.builder()
+                .id(2L)
+                .title("Active Program")
+                .description("Active Program")
+                .enrollmentInitialDate(futureDate)
+                .enrollmentEndDate(futureDate)  // Data de término no futuro
+                .status(Status.APPROVED)
+                .location("Location B")
+                .programType(ProgramType.HIGHER)
+                .file("any")
+                .feedback("any")
+                .build();
 
-    ProgramResponseDTO activeProgram = ProgramResponseDTO.builder()
-            .id(2L)
-            .title("Active Program")
-            .description("Active Program")
-            .enrollmentInitialDate(futureDate)
-            .enrollmentEndDate(futureDate)  // Data de término no futuro
-            .status(Status.APPROVED)
-            .location("Location B")
-            .programType(ProgramType.HIGHER)
-            .file("any")
-            .feedback("any")
-            .build();
+        ProgramResponseDTO anotherActiveProgram = ProgramResponseDTO.builder()
+                .id(3L)
+                .title("Another Active Program")
+                .description("Another Active Program")
+                .enrollmentInitialDate(anotherFutureDate)
+                .enrollmentEndDate(anotherFutureDate)  // Data de término no futuro
+                .status(Status.APPROVED)
+                .location("Location C")
+                .programType(ProgramType.HIGHER)
+                .file("any")
+                .feedback("any")
+                .build();
 
-    ProgramResponseDTO anotherActiveProgram = ProgramResponseDTO.builder()
-            .id(3L)
-            .title("Another Active Program")
-            .description("Another Active Program")
-            .enrollmentInitialDate(anotherFutureDate)
-            .enrollmentEndDate(anotherFutureDate)  // Data de término no futuro
-            .status(Status.APPROVED)
-            .location("Location C")
-            .programType(ProgramType.HIGHER)
-            .file("any")
-            .feedback("any")
-            .build();
+        // Simulando o comportamento do serviço para retornar os programas filtrados
+        when(programService.getFiltered(any(), any(), any(), any(), any(), eq(true), any()))
+                .thenReturn(List.of(activeProgram, anotherActiveProgram));
 
-    // Simulando o comportamento do serviço para retornar os programas filtrados
-    when(programService.getFiltered(any(), any(), any(), any(), any(), eq(true), any()))
-            .thenReturn(List.of(activeProgram, anotherActiveProgram));
+        // Realizando a chamada do MockMvc para testar a API
+        MvcResult result = mockMvc.perform(get("/programs") // Base endpoint da API
+                        .param("status", Status.APPROVED.name())
+                        .param("language", "English")
+                        .param("openSubscription", "true")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()) // Verifica status HTTP 200
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.length()").value(2))  // Espera dois programas ativos
+                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id", equalTo(2)))  // Verifica o ID do primeiro programa como Long
+                .andExpect(MockMvcResultMatchers.jsonPath("$[1].id", equalTo(3)))
+                .andReturn();
 
-    // Realizando a chamada do MockMvc para testar a API
-    MvcResult result = mockMvc.perform(get("/programs") // Base endpoint da API
-                    .param("status", Status.APPROVED.name())
-                    .param("language", "English")
-                    .param("openSubscription", "true")
-                    .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk()) // Verifica status HTTP 200
-            .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.length()").value(2))  // Espera dois programas ativos
-            .andExpect(MockMvcResultMatchers.jsonPath("$[0].id", equalTo(2)))  // Verifica o ID do primeiro programa como Long
-            .andExpect(MockMvcResultMatchers.jsonPath("$[1].id", equalTo(3)))
-            .andReturn();
+        // Imprime o conteúdo da resposta
+        System.out.println("Response: " + result.getResponse().getContentAsString());
 
-    // Imprime o conteúdo da resposta
-    System.out.println("Response: " + result.getResponse().getContentAsString());
-
-    // Certificando que o programa passado com data expirada não foi retornado
-    verify(programService).getFiltered(any(), any(), any(), eq("English"), any(), eq(true), any());
-}
+        // Certificando que o programa passado com data expirada não foi retornado
+        verify(programService).getFiltered(any(), any(), any(), eq("English"), any(), eq(true), any());
+    }
 }

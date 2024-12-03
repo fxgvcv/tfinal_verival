@@ -46,6 +46,12 @@ public class ProgramController {
                 .body(savedProgram);
     }
 
+    @GetMapping("/sorted")
+    public ResponseEntity<List<ProgramResponseDTO>> getProgramsSortedByEnrollmentDate() {
+        List<ProgramResponseDTO> programs = this.service.getProgramsSortedByEnrollmentDate();
+        return ResponseEntity.ok(programs);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ProgramResponseDTO> findById(@PathVariable Long id) {
         try {
