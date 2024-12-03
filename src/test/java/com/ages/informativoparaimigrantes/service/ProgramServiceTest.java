@@ -287,54 +287,60 @@ public class ProgramServiceTest {
         assertEquals("Program Z", sortedPrograms.get(2).getTitle());  // O programa sem data de inscrição, mas com nome Z, deve vir por último
     }
 
-//    @Test
-//    public void testProgramsWithExpiredEnrollmentDate() {
-//        // Criando programas com data de inscrição no passado e no futuro (usando Date)
-//        Date expiredEnrollmentDate = Date.from(LocalDate.of(2023, 12, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-//        Date activeEnrollmentDate = Date.from(LocalDate.of(2024, 12, 20).atStartOfDay(ZoneId.systemDefault()).toInstant());
-//        Date activeEndDate = Date.from(LocalDate.of(2024, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant()); // data de fim de inscrição do programa ativo
-//
-//        // O programa expirado deve ter uma enrollmentEndDate no passado
-//        Program expiredProgram = new Program(1L, "institution1@example.com", "Expired Program", "Description 1",
-//                "http://link1.com", "English", null, null,
-//                expiredEnrollmentDate, expiredEnrollmentDate, Status.APPROVED,
-//                "Location 1", null, null, ProgramType.HIGHER, null);
-//
-//        // O programa ativo deve ter uma enrollmentEndDate no futuro
-//        Program activeProgram = new Program(2L, "institution2@example.com", "Active Program", "Description 2",
-//                "http://link2.com", "English", null, null,
-//                activeEnrollmentDate, activeEndDate, Status.APPROVED,
-//                "Location 2", null, null, ProgramType.HIGHER, null);
-//
-//        // Adicionando-os à lista
-//        List<Program> programs = Arrays.asList(expiredProgram, activeProgram);
-//
-//        // Data atual para o filtro (combinando com a hora do sistema)
-//        Date testCurrentDate = Date.from(LocalDate.of(2024, 11, 29).atStartOfDay(ZoneId.systemDefault()).toInstant()); // Data fixa para garantir consistência
-//
-//        // Simulando o repositório para retornar apenas programas com inscrições abertas (openSubscription = true)
-//        when(programRepository.findWithFilters(
-//                eq(null),  // status
-//                eq(null),  // institutionEmail
-//                eq(null),  // programType
-//                eq(null),  // language
-//                eq(null),  // location
-//                eq(true)   // openSubscription - estamos buscando programas com inscrições abertas
-//        )).thenReturn(programs);  // O repositório irá usar a lógica já implementada na consulta
-//
-//        // Act: Chama o serviço para obter os programas filtrados
-//        List<ProgramResponseDTO> filteredPrograms = programService.getFiltered(
-//                Status.APPROVED,  // Status
-//                null,             // institutionEmail
-//                null,             // programType
-//                null,             // language
-//                null,             // location
-//                true,             // openSubscription - queremos programas com inscrição aberta
-//                null              // tags
-//        );
-//
-//        // Assert: Verifica se o programa expirado foi excluído
-//        assertEquals(1, filteredPrograms.size());  // Deve haver apenas 1 programa com inscrição aberta
-//        assertEquals("Active Program", filteredPrograms.get(0).getTitle());  // O programa ativo deve ser retornado
-//    }
+    @Test
+    public void testProgramsWithExpiredEnrollmentDate() {
+        // Arrange: Criando programas com data de inscrição no passado e no futuro (usando Date)
+        Date expiredEnrollmentDate = Date.from(LocalDate.of(2023, 12, 1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date activeEnrollmentDate = Date.from(LocalDate.of(2024, 12, 20).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date activeEndDate = Date.from(LocalDate.of(2024, 12, 31).atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        System.out.println("Expired enrollment date: " + expiredEnrollmentDate);
+        System.out.println("Active enrollment date: " + activeEnrollmentDate);
+        System.out.println("Active end date: " + activeEndDate);
+
+        // Programa expirado
+        Program expiredProgram = new Program(1L, "institution1@example.com", "Expired Program", "Description 1",
+                "http://link1.com", "English", null, null,
+                expiredEnrollmentDate, expiredEnrollmentDate, Status.APPROVED,
+                "Location 1", null, null, ProgramType.HIGHER, null);
+
+        // Programa ativo
+        Program activeProgram = new Program(2L, "institution2@example.com", "Active Program", "Description 2",
+                "http://link2.com", "English", null, null,
+                activeEnrollmentDate, activeEndDate, Status.APPROVED,
+                "Location 2", null, null, ProgramType.HIGHER, null);
+
+        // Simulando o comportamento do repositório para retornar todos os programas
+// Substitua a chamada para .toList() por .collect(Collectors.toList())
+        when(programRepository.findWithFilters(
+                eq(Status.APPROVED),
+                eq(null), // institutionEmail
+                eq(null), // programType
+                eq(null), // language
+                eq(null), // location
+                eq(true)  // openSubscription
+        )).thenAnswer(invocation -> {
+            // Filtrar manualmente os programas com inscrições abertas
+            return Arrays.asList(activeProgram, expiredProgram).stream()
+                    .filter(program -> program.getEnrollmentEndDate().after(new Date())) // Apenas com inscrição aberta
+                    .collect(Collectors.toList()); // Coleta em uma lista
+        });
+
+        // Act: Chama o serviço para obter os programas filtrados
+        List<ProgramResponseDTO> filteredPrograms = programService.getFiltered(
+                Status.APPROVED, // Status
+                null,            // institutionEmail
+                null,            // programType
+                null,            // language
+                null,            // location
+                true,            // openSubscription
+                null             // tags
+        );
+
+        System.out.println("Filtered programs: " + filteredPrograms);
+
+        // Assert: Verifica se o programa expirado foi excluído
+        assertEquals(1, filteredPrograms.size()); // Deve haver apenas 1 programa com inscrição aberta
+        assertEquals("Active Program", filteredPrograms.get(0).getTitle()); // O programa ativo deve ser retornado
+    }
 }

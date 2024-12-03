@@ -405,6 +405,7 @@ public class ProgramControllerTest {
 //    // 9. Ordenação por Data de Inscrição
 //    @Test
 //    void testGetFiltered_withSortByEnrollmentDate() throws Exception {
+//        // Criando o programa simulado com uma data de inscrição específica
 //        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
 //                .id(1L)
 //                .title("Program 1")
@@ -418,14 +419,17 @@ public class ProgramControllerTest {
 //                .feedback("any")
 //                .build();
 //
-//        when(service.getFiltered(any(), any(), any(), any(), any(), any(), any())).thenReturn(List.of(mockProgram));
+//        // Mock do serviço retornando o programa simulado
+//        when(programService.getFiltered(any(), any(), any(), any(), any(), any(), any()))
+//                .thenReturn(List.of(mockProgram));  // Retorna a lista com o mockProgram
 //
-//        mockMvc.perform(get(baseEndpoint + "?sortBy=enrollmentInitialDate"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
+//        // Realizando a requisição GET com o parâmetro "sortBy=enrollmentInitialDate"
+//        mockMvc.perform(get("/programs")  // Certifique-se de que o "baseEndpoint" esteja correto
+//                .andExpect(status().isOk())  // Espera-se um status 200 OK
+//                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));  // Espera-se que o conteúdo seja o programa simulado
 //    }
 //
-//    // 10. Exclusão de Programas com Inscrição Passada
+    // 10. Exclusão de Programas com Inscrição Passada
 //    @Test
 //    void testGetProgramsWithPastEnrollmentDate() throws Exception {
 //        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -444,9 +448,9 @@ public class ProgramControllerTest {
 //                .feedback("any")
 //                .build();
 //
-//        when(service.getFiltered(any(), any(), any(), any(), any(), any(), any())).thenReturn(List.of(pastProgram));
+//        when(programService.getFiltered(any(), any(), any(), any(), any(), any(), any())).thenReturn(List.of(pastProgram));
 //
-//        mockMvc.perform(get(baseEndpoint + "?programStartDate=" + futureDate))
+//        mockMvc.perform(get(baseEndpoint + "" + futureDate))
 //                .andExpect(status().isOk())
 //                .andExpect(content().json("[]"));
 //    }
