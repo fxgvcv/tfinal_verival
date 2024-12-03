@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.web.client.RestTemplate;
 
 import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -301,45 +302,57 @@ public class ProgramControllerTest {
                 .andExpect(content().json(new ObjectMapper().writeValueAsString(mockPrograms)));
     }
 
-
-//    // 4. Múltiplos Filtros Aplicados
+//
+////  4. Múltiplos Filtros Aplicados
 //    @Test
 //    void testGetFiltered_withMultipleFilters() throws Exception {
-//        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-//        Date programInitialDate = dateFormat.parse("2024-01-01");
-//        Date programEndDate = dateFormat.parse("2024-12-31");
 //
 //        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
 //                .id(1L)
 //                .title("Program 1")
 //                .description("Description")
-//                .programInitialDate(programInitialDate)
-//                .programEndDate(programEndDate)
+//                .programInitialDate(null)
+//                .programEndDate(null)
 //                .status(Status.APPROVED)
 //                .location("São Paulo")
-//                .tags(Collections.emptyList())
+//                .tags(Collections.emptyList()) // Se houver tags, ajuste aqui
 //                .file("any")
 //                .programType(ProgramType.HIGHER)
 //                .feedback("any")
 //                .build();
 //
-//        when(service.getFiltered(Status.APPROVED, "Higher", "PT-BR", null, "São Paulo", programInitialDate, programEndDate)).thenReturn(List.of(mockProgram));
+//        // Mock do comportamento do serviço
+//        when(programService.getFiltered(Status.APPROVED, null, ProgramType.HIGHER, null, "Porto Alegre", true, null))
+//                .thenReturn(List.of(mockProgram));
 //
-//        mockMvc.perform(get(baseEndpoint + "?status=APPROVED&type=Higher&language=PT-BR&location=São Paulo&programStartDate=2024-01-01&programEndDate=2024-12-31"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
+//        // Realiza a requisição com todos os parâmetros corretamente passados
+//        mockMvc.perform(get("/programs")  // Ajuste a URL para o caminho correto da sua API
+//                        .param("status", "APPROVED")  // Passando 'APPROVED' para o status
+//                        .param("type", "HIGHER")      // Passando 'HIGHER' para o type (enum)
+//                        .param("institutionEmail", "email.com")      // Passando 'HIGHER' para o type (enum)
+//                        .param("language", "PT-BR")   // Passando 'PT-BR' para o language
+//                        .param("location", "São Paulo") // Passando 'São Paulo' para a location// Passando data de fim
+//                        .param("openSubscription", "true"))  // Se esse parâmetro for necessário, forneça um valor (como 'true' ou 'false')
+//                .andExpect(status().isOk())  // Espera-se um status 200 OK
+//                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram)))); // Espera-se o retorno do mockProgram
 //    }
-//
-//    // 5. Resposta Vazia para Filtros Sem Correspondência
-//    @Test
-//    void testGetFiltered_withNoResults() throws Exception {
-//        when(service.getFiltered(Status.APPROVED, null, null, null, "Nonexistent Location", null, null)).thenReturn(Collections.emptyList());
-//
-//        mockMvc.perform(get(baseEndpoint + "?status=APPROVED&location=Nonexistent Location"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json("[]"));
-//    }
-//
+
+
+    // 5. Resposta Vazia para Filtros Sem Correspondência
+    @Test
+    void testGetFiltered_withNoResults() throws Exception {
+        // Mock do comportamento do serviço, retornando uma lista vazia para o filtro com localização inexistente
+        when(programService.getFiltered(Status.APPROVED, null, null, null, "Nonexistent Location", null, null))
+                .thenReturn(Collections.emptyList());
+
+        // Realiza a requisição GET com os filtros que não devem retornar resultados
+        mockMvc.perform(get("/programs")  // Certifique-se de que baseEndpoint está corretamente definido
+                        .param("status", "APPROVED")
+                        .param("location", "Nonexistent Location"))
+                .andExpect(status().isOk())  // Espera-se um status 200 OK
+                .andExpect(content().json("[]"));  // Espera-se uma resposta vazia (lista vazia)
+    }
+
 //    // 6. Tratamento de Exceções
 //    @Test
 //    void testServiceException() throws Exception {
