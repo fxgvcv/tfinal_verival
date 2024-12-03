@@ -356,42 +356,52 @@ public class ProgramControllerTest {
 //    // 6. Tratamento de Exceções
 //    @Test
 //    void testServiceException() throws Exception {
-//        when(service.getFiltered(any(), any(), any(), any(), any(), any(), any())).thenThrow(new RuntimeException("Service error"));
+//        // Configura o mock para lançar uma RuntimeException quando o serviço for chamado
+//        when(programService.getFiltered(any(), any(), any(), any(), any(), any(), any()))
+//                .thenThrow(new RuntimeException("Service error"));
 //
-//        mockMvc.perform(get(baseEndpoint))
-//                .andExpect(status().isInternalServerError());
+//        // Realiza a requisição GET, esperando que uma exceção ocorra e o status 500 seja retornado
+//        mockMvc.perform(get("/programs"))
+//                .andExpect(status().isInternalServerError())  // Espera-se um status 500
+//                .andExpect(content().string("Service error"));  // Opcional: Verifica se a mensagem de erro é retornada
 //    }
-//
+
 //    // 7. Validação de Parâmetros Inválidos
 //    @Test
 //    void testGetFiltered_withInvalidStatus() throws Exception {
-//        mockMvc.perform(get(baseEndpoint + "?status=INVALID"))
-//                .andExpect(status().isBadRequest());
+//        mockMvc.perform(get("/programs/?status=INVALID"))
+//                .andExpect(status().isBadRequest())
+//                .andExpect(content().string("Status inválido"));
 //    }
-//
-//    // 8. Filtros Individuais (Testando filtros isolados)
-//    @Test
-//    void testGetFiltered_withLanguageFilter() throws Exception {
-//        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
-//                .id(1L)
-//                .title("Program 1")
-//                .description("Description")
-//                .language("PT-BR")
-//                .status(Status.PENDING)
-//                .location("São Paulo")
-//                .tags(Collections.emptyList())
-//                .file("any")
-//                .programType(ProgramType.HIGHER)
-//                .feedback("any")
-//                .build();
-//
-//        when(service.getFiltered(null, null, "PT-BR", null, null, null, null)).thenReturn(List.of(mockProgram));
-//
-//        mockMvc.perform(get(baseEndpoint + "?language=PT-BR"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));
-//    }
-//
+
+    // 8. Filtros Individuais (Testando filtros isolados)
+    @Test
+    void testGetFiltered_withLanguageFilter() throws Exception {
+        // Criando um programa simulado com o idioma PT-BR
+        ProgramResponseDTO mockProgram = ProgramResponseDTO.builder()
+                .id(1L)
+                .title("Program 1")
+                .description("Description")
+                .language("PT-BR")
+                .status(Status.PENDING)
+                .location("São Paulo")
+                .tags(Collections.emptyList())
+                .file("any")
+                .programType(ProgramType.HIGHER)
+                .feedback("any")
+                .build();
+
+        // Mock do serviço para retornar o programa simulado quando o filtro "language" for "PT-BR"
+        when(programService.getFiltered(null, null, null, "PT-BR", null, null, null)).thenReturn(List.of(mockProgram));
+
+        // Realizando a requisição GET com o parâmetro "language=PT-BR"
+        mockMvc.perform(get("/programs")  // Certifique-se de que o endpoint esteja correto
+                        .param("language", "PT-BR"))  // Passando o filtro "language"
+                .andExpect(status().isOk())  // Espera-se um status 200 OK
+                .andExpect(content().json(new ObjectMapper().writeValueAsString(List.of(mockProgram))));  // Espera-se que o conteúdo da resposta seja igual ao mockProgram
+    }
+
+
 //    // 9. Ordenação por Data de Inscrição
 //    @Test
 //    void testGetFiltered_withSortByEnrollmentDate() throws Exception {
